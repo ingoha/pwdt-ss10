@@ -1,0 +1,467 @@
+<HTML>
+<HEAD>
+	<TITLE>Integrator Level II+ Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7>
+ Integrator - ODBC Training </H1>
+
+<h1> Module 220: Preparing and Submitting SQL Requests </h1>
+
+
+
+
+
+This module focuses on the preparation and execution of SQL statements.
+<p>
+There are two different methods an application can use when executing
+SQL with ODBC: direct execution and prepared execution.
+Direct execution is the fastest and easiest way to execute SQL statments, but
+prepared execution provides greater flexibility, especially when using SQL statements 
+with parameters.
+<p>
+Direct execution (SQLExecDirect) should be used when the SQL statements will be exucuted once and when
+no information is needed about the result set prior to execution.
+<p>
+Prepared execution (SQLPrepare and SQLExecute) is superior to direct execution
+if you need to execute a SQL statement more than once or if you require information
+about the result set before execution. 
+An application first calls SQLPrepare with the SQL statement to be prepared. Then SQLExecute
+is called to execute the SQL statement itself.
+SQLPrepare differs from SQLExecDirect in that the SQL statement is not actually executed
+when SQLPrepare is called. Instead,a data access path is formulated by the data source
+and information about the result set is made available. Because the data access path
+already has been formulated by the database, execution can be faster than with SQLExecDirect.
+
+<p>
+The list below contains a description and the usage of some of the ODBC functions.
+The flag that preceeds the procedure name (**,* or --) indicates
+the frequency of use of the procedure (frequently, regularly, almost never)
+and hence its importance.
+
+<TABLE>
+<TR><TD bgcolor=#999999 valign="top">
+** </TD><TD><b>odbc SQLAllocHandle handleType inputHandle outputHandle </b>(ODBC 3.x+)<br>
+   Purpose: This function allocates memory for an environment, connection or statement handle. <BR>
+            <TABLE BORDER="1" WIDTH=600>
+            <TR><TD>handleType</TD><TD>input</TD><TD>Type of handle, either SQL_HANDLE_ENV (environment),
+                                        SQL_HANDLE_DBC (connection), SQL_HANDLE_STMT (statement) 
+                                        or SQL_HANDLE_DESC (descriptor).
+            <TR><TD>inputHandle</TD><TD>input</TD><TD>Specifies an existing handle in whose context
+                             the new handle is to be created. Set to SQL_NULL_HANDLE if allocating
+                             an environment handle.
+            <TR><TD>outputHandle</TD><TD>output</TD><TD>Variable name containing the resulting handle.
+            </TABLE>
+   Return codes: SQL_SUCCESS, SQL_SUCCESS_WITH_INFO, SQL_INVALID_HANDLE or SQL_ERROR.
+                 Note that this Tcl procedure may return a TCL_ERROR if a severe
+                 error occurs in the Tcl extension layer unrelated to ODBC. <br>
+   Notes: SQLError can't be used in case of failure during the allocation of an environment
+          handle since SQLError requires a valid environment handle. <BR>
+   Examples:
+
+<PRE># catch omitted
+# assume hdbc contains a valid connection handle
+set rc [odbc SQLAllocHandle SQL_HANDLE_STMT $hdbc hstmt]
+if $rc .........
+</PRE>
+</TD><TR>
+
+
+<TR><TD bgcolor=#999999 valign="top">
+** </TD><TD><b>odbc SQLAllocStmt hdbc hstmtVarName </b>(ODBC 2.0 Only)<br>
+   Purpose: This function allocates memory storage for a statement handle and associates this
+            handle with a connection. Multiple statement handles may be associated
+            with a single connection. An application must at least allocate 1 statement handle
+            before the application can submit SQL statements.<BR>
+            <TABLE BORDER="1" WIDTH=600>
+            <TR><TD>hdbc</TD><TD>input</TD><TD>Connection handle
+            <TR><TD>hstmtVarName</TD><TD>output</TD><TD>Statement handle or SQL_NULL_HSTMT
+            </TABLE>
+   Return codes: SQL_SUCCESS, SQL_SUCCESS_WITH_INFO,
+                 SQL_ERROR, SQL_INVALID_HANDLE.
+                 Note that this Tcl procedure may return a TCL_ERROR if a severe
+                 error occurs in the Tcl extension layer unrelated to ODBC. <br>
+   Notes: Some databases (e.g. SQL Server) don't allow more than one active statement
+          (i.e. a statement with an active result set/cursor)
+          to be allocated per connection. See SQLGetInfo / SQL_ACTIVE_STATEMENTS
+          in <a href="m210.htm">Module 210</a>. If the number of statements is limited,
+          additional connections will have to be established. <BR>
+   Examples:
+
+<PRE># hdbc is assumed to be a connection handle; catches not shown
+set rc [odbc SQLAllocStmt $hdbc hstmt]
+if {[odbcResultIsFailure $rc]} {
+   echo Error allocating a statement handle
+   # State 08003 indicates that the connection wasn't open
+} else {
+   echo Created statement handle $hstmt
+}
+</PRE>
+</TD><TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+** </TD><TD><b>odbc SQLExecDirect hstmt sqlStatement SQL_NTS</b><br>
+   Purpose: This function executes a SQL statement, using the current values of the
+            parameter marker variables if any parameter markers exist in the statement.<BR>
+            <TABLE BORDER="1" WIDTH=600>
+            <TR><TD>hstmt</TD><TD>input</TD><TD>Statement handle
+            <TR><TD>sqlStatement</TD><TD>input</TD><TD>The SQL statement to be executed
+            </TABLE>
+   Return codes: SQL_SUCCESS, SQL_SUCCESS_WITH_INFO, SQL_NO_DATA_FOUND, 
+                 SQL_NEED_DATA, SQL_STILL_EXECUTING,
+                 SQL_ERROR, SQL_INVALID_HANDLE.
+                 Note that this Tcl procedure may return a TCL_ERROR if a severe
+                 error occurs in the Tcl extension layer unrelated to ODBC. <br>
+   Notes: <BR>
+   Examples:
+
+<PRE>set rc [odbc SQLExecDirect $hstmt "SELECT * FROM INVENTORY" SQL_NTS]
+--
+set cmd "SELECT partNbr, partName FROM Inventory WHERE stock = 0"
+if [catch {set rc [odbc SQLExecDirect $hstmt $cmd SQL_NTS] } tclerr ] {
+	# A serious Tcl error occured in the Tcl-odbc API 
+	echo "Error on SQL! Tcl error during exec \
+              of SQLExecDirect - $tclerr
+}  
+if [odbcResultIsFailure $rc] {
+	lassign [odbcGetError $henv $hdbc SQL_NULL_HSTMT] state local msg
+	echo "Error on SQLExecDirect '$cmd' ($state): $msg"
+}
+</PRE>
+</TD><TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+** </TD><TD><b>odbc SQLPrepare hstmt sqlStatement SQL_NTS </b><br>
+   Purpose: This function prepares an SQL statement for execution.<BR>
+            <TABLE BORDER="1" WIDTH=600>
+            <TR><TD>hstmt</TD><TD>input</TD><TD>Statement handle
+            <TR><TD>sqlCmd</TD><TD>input</TD><TD>The SQL statement to be prepared
+            </TABLE>
+   Return codes: SQL_SUCCESS, SQL_SUCCESS_WITH_INFO, SQL_STLL_EXECUTING,
+                 SQL_ERROR, SQL_INVALID_HANDLE.
+                 Note that this Tcl procedure may return a TCL_ERROR if a severe
+                 error occurs in the Tcl extension layer unrelated to ODBC. <br>
+   Notes: If the statement contains parameter markers, these have to be bound
+          using SQLBindParameter before the statement can be executed.  <BR>
+   Examples:
+
+<PRE>set insert "INSERT INTO ContactParty VALUES (?,?,?)"
+odbc SQLPrepare $hstmt $insert SQL_NTS
+---
+set cmd "SELECT partNbr, partName FROM Inventory WHERE stock = 0"
+odbc SQLPrepare $hstmt $cmd SQL_NTS
+odbc SQLExecute $hstmt
+# After closing the cursor on the pending result set,
+# the same statement can be executed again, without further ado.
+odbc SQLFreeStmt $hstmt SQL_CLOSE
+# xxxxxxxxxxx how to do this in odbc 3.x ???
+odbc SQLExecute $hstmt
+</PRE>
+</TD><TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+** </TD><TD><b>odbc SQLBindParameter hstmt parNbr parType CType SqlType ColDef Scale Value ValueMax ValLen</b><br>
+   Purpose: This function binds a variable name to a parameter marker in an SQL statement.
+            The parameter marker will be replaced by the value of the variable bound to it
+            when the statement is executed.<BR>
+            <TABLE BORDER="1" WIDTH=600>
+            <TR><TD>hstmt</TD><TD>input</TD><TD>Statement handle
+            <TR><TD>parNbr</TD><TD>input</TD><TD>A parameter number, ordered sequentially left 
+                                                 to right, satarting at 1
+            <TR><TD>parType</TD><TD>input</TD><TD>Either SQL_PARAM_INPUT, SQL_PARAM_INPUT_OUTPUT,
+                                                  SQL_PARAM_OUTPUT.
+            <TR><TD valign="top">CType</TD><TD valign="top">input</TD><TD>The C data type of the parameter. When using a Tcl string,
+                      set to SQL_C_CHAR. Other types are valid, but SQL_C_CHAR will effectively be used.
+          The syntax of the CType parameter can be specified as fCtype or {Ctype HCIVAR}
+          or {Ctype HCIDAT} or {Ctype HCIMSG}. In all cases exept HCIMSG the
+          fCtype is effectively ignored and SQL_C_CHAR is assumed, since the
+          source of the data is a Tcl string.
+            <TR><TD valign="top">SqlType</TD><TD valign="top">input</TD><TD>The SQL data type of the parameter. 
+                SQL_BIGINT, SQL_BINARY, SQL_BIT, SQL_CHAR, SQL_DATE, SQL_DECIMAL, SQL_DOUBLE,
+                SQL_INTEGER, SQL_LONGVARBINARY, SQL_LONGCARCHAR, SQL_NUMERIC, SQL_REAL,
+                SQL_SMALLINT, SQL_TIME, SQL_TIMESTAMP, SQL_TINYINT, SQL_VARBINARY, SQL_VARCHAR,
+                or a driver specific value. This must match the SQL type of the column
+                that corresponds with this parameter marker. This information can be obtained from
+                SQLColumns or SQLDescribeCol.
+            <TR><TD valign="top">ColDef</TD><TD valign="top">input</TD><TD>The precision of the column or expression of
+                  the corresponding parameter marker (mostly equivalent to the maximum number
+                  of digits/chars of the parameter value). This information can be obtained from
+                  SQLColumns or SQLDescribeCol.
+            <TR><TD valign="top">Scale</TD><TD valign="top">input</TD><TD>The scale of the column or expression
+                  of the corresponding parameter marker. This information can be obtained from
+                  SQLColumns or SQLDescribeCol.
+            <TR><TD valign="top">Value</TD><TD valign="top">input/output</TD><TD>The name of the variable that,
+                  when SQLExecute or SQLExecDirect is called, contains the actual data
+                  for the parameter.
+            <TR><TD valign="top">ValueMax</TD><TD valign="top">input</TD><TD>Maximum length of <em>Value</em>.
+                When binding an INPUT parameter, the value of ValueMax should be at least 
+                equal to ColDef + 1 (1 byte for NULL termination
+                of the value). in the Integrator version
+                3.5+, a ValueMax of "0" can be used to indicate that Integrator should set
+                ValueMax to ColDef + 1.
+            <TR><TD valign="top">ValLenVarName</TD><TD valign="top">input/output</TD><TD>The actual length of <em>Value</em>. 
+                Set to SQL_NTS, NULL or {} for Tcl variables.
+          <!--- Varname instead of literal. Reported by Peter G. -------->
+            </TABLE>
+   Return codes: SQL_SUCCESS, SQL_SUCCESS_WITH_INFO,
+                 SQL_ERROR, SQL_INVALID_HANDLE.
+                 Note that this Tcl procedure may return a TCL_ERROR if a severe
+                 error occurs in the Tcl extension layer unrelated to ODBC. <br>
+   Notes:        Experience has shown that when binding parameters
+                 for Oracle and Informix one can use SQL_CHAR
+                 as the SqlType parameter for all bound parameters, whereas for Sybase
+                 the 'correct' data type has to be specified. Use SQLDescribeCol
+                 or SQLProcedureColumns 
+                 to retrieve the SQL types of the parameters. <BR>
+   Examples:
+
+<PRE>set valueLen SQL_NTS
+set insert "INSERT INTO NameId VALUES (?, ?, ?)"
+odbc SQLPrepare $hstmt $insert SQL_NTS
+odbc SQLBindParameter $hstmt 1 SQL_PARAM_INPUT \
+     SQL_C_SLONG SQL_INTEGER 0 0 id 0 valueLen
+odbc SQLBindParameter $hstmt 2 SQL_PARAM_INPUT \
+     SQL_C_DOUBLE SQL_DOUBLE 0 0 dTag 0 valueLen
+odbc SQLBindParameter $hstmt 3 SQL_PARAM_INPUT \ 
+     SQL_C_CHAR SQL_CHAR 50 0 name 50 valueLen
+--
+odbc SQLBindParameter $hstmt 1 SQL_PARAM_INPUT \
+     {SQL_C_SLONG HCIMSG} SQL_BINARY 4 0 $msgHandle 4 valueLen
+odbc SQLBindParameter $hstmt 2 SQL_PARAM_INPUT \
+     {SQL_C_SLONG HCIDAT} SQL_CHAR 4 0 $datHandle 4 valueLen
+</PRE>
+</TD><TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+** </TD><TD><b>odbc SQLExecute hstmt </b><br>
+   Purpose: This function executes a prepared SQL statement, using the current values of the
+            parameter marker variables if any parameter markers exist in the statement.<BR>
+            <TABLE BORDER="1" WIDTH=600>
+            <TR><TD>hstmt</TD><TD>input</TD><TD>Statement handle
+            </TABLE>
+   Return codes: SQL_SUCCESS, SQL_SUCCESS_WITH_INFO, SQL_NEED_DATA,
+                 SQL_STILL_EXECUTING,
+                 SQL_ERROR, SQL_INVALID_HANDLE.
+                 Note that this Tcl procedure may return a TCL_ERROR if a severe
+                 error occurs in the Tcl extension layer unrelated to ODBC. <br>
+   Notes: Mostly used in combination with parameter markers. <BR>
+   Examples:
+
+<PRE>set cmd "SELECT ColA, ColB FROM Accounts WHERE Acc_Nbr = 777345"
+odbc SQLPrepare $hstmt $cmd
+odbc SQLExecute $hstmt
+--
+set cmd "SELECT ColA, ColB FROM Accounts WHERE Acc_Nbr = ?"
+odbc SQLPrepare $hstmt $cmd
+set valueLen SQL_NTS
+odbc SQLBindParameter $hstmt 1 SQL_PARAM_INPUT \
+     SQL_C_SLONG SQL_INTEGER 0 0 id 0 valueLen
+set id 777345
+odbc SQLExecute $hstmt
+--
+# prepare statement, bind single parameter
+
+set cmd "SELECT * FROM Cities WHERE Cities_Id = ? "
+odbc SQLPrepare $hstmt $cmd SQL_NTS
+set valueLen SQL_NTS
+odbc SQLBindParameter $hstmt 1 SQL_PARAM_INPUT \
+     SQL_C_SLONG SQL_INTEGER 0 0 id 0 valueLen
+
+set id 104
+echo Selecting with id = $id
+odbc SQLExecute $hstmt 
+if {![err]} {getresults}
+
+# before executing the bound statement anew, close the
+# open cursor. The number of rows returned by
+# a prepared statement may be different (select .. where a > $index)
+# each time it's executed in which case the invalid open cursor will 
+# cause an error 24000.
+odbc SQLFreeStmt $hstmt SQL_CLOSE
+# xxxxxxxxxxxxxxxxx how to in odbc 3.x ???
+
+set id 178
+echo Selecting with id = $id
+odbc SQLExecute $hstmt 
+if {![err]} {getresults}
+
+# (odbc 2.x) clean-up statement handle
+# (odbc 2.x) odbc SQLFreeStmt $hstmt SQL_RESET_PARAMS
+# (odbc 2.x) odbc SQLFreeStmt $hstmt SQL_UNBIND
+# (odbc 2.x) odbc SQLFreeStmt $hstmt SQL_CLOSE
+
+# (odbc 3.x) Create a new statement handle, drop old one
+odbc SQLFreeHandle SQL_HANDLE_STMT $hstmt
+odbc SQLAllocHandle SQL_HANDLE_STMT $hdbc hstmt
+
+</PRE>
+</TD><TR>
+
+
+<TR><TD bgcolor=#999999 valign="top">
+- </TD><TD><b>odbc SQLParamData ..... </b><br>
+   Purpose: This function is used in conjunction with SQLPutData to supply
+            parameter data at statement execution time.<BR>
+   Notes: See other documentation.
+</TD><TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+- </TD><TD><b>odbc SQLPutData ..... </b><br>
+   Purpose: This function allows an application to send data for a parameter or a
+            single column to the driver at statement execution time.<BR>
+   Notes: See other documentation.
+</TD><TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+- </TD><TD><b>odbc SQLParamOptions ..... </b><br>
+   Purpose: This function allows an application to specify multiple values for the set
+            of parameters that are assigned by SQLBindParameter. <BR>
+   Notes: See other documentation.
+</TD><TR>
+
+<!----------------------------
+
+<TR><TD bgcolor=#999999 valign="top">
+- </TD><TD><b>odbc SQLSetStatementOption ..... </b><br>
+   Purpose: This function <BR>
+   Notes: See other documentation.
+</TD><TR>
+--------------------------------->
+
+<TR><TD bgcolor=#999999 valign="top">
+* </TD><TD><b>odbc SQLCancel hstmt</b><br>
+   Purpose: This function cancels cancels the execution of the
+            statement associated with the statement handle.<BR>
+   Notes: See other documentation.
+</TD><TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+- </TD><TD><b>odbc SQLGetStatementOption ..... </b><br>
+   Purpose: This function allows an application to specify multple values for the
+            set of parameters that are assigned by SQLBindParameter.<BR>
+   Notes: See other documentation.
+</TD><TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+- </TD><TD><b>odbc SQLTables ..... </b><br>
+   Purpose: This catalog function returns a list of tables that are stored in a data source.
+            This is an extended odbc function that is not available in all drivers.<BR>
+   Notes: Not implemented in the current (331P) Integrator version. See other documentation.
+</TD><TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+-</TD><TD><b>odbc SQLColumns ..... </b><br>
+   Purpose: This catalog function returns a list of column names in the specified tables.
+            This is an extended odbc function that is not available in all drivers.<BR>
+   Notes: Not implemented in the current (331P) Integrator version. See other documentation.
+</TD><TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+- </TD><TD><b>odbc SQLStatistics ..... </b><br>
+   Purpose: This catalog function retrieves a list of statistics about a single table
+            and the indexes that are associated with that table.
+            This is an extended odbc function that is not available in all drivers.<BR>
+   Notes: Not implemented in the current (331P) Integrator version.See other documentation.
+</TD><TR>
+
+
+<TR><TD bgcolor=#999999 valign="top">
+- </TD><TD><b>odbc SQLSpecialColumns ..... </b><br>
+   Purpose: This catalog function returns information about <em>pseudo-columns</em>.
+            This is an extended odbc function that is not available in all drivers.<BR>
+   Notes: Not implemented in the current (331P) Integrator version. See other documentation.
+</TD><TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+** </TD><TD><b>odbc SQLFreeHandle handleType handle </b>(ODBC 3.0+)<br>
+   Purpose: This function releases an environment, connection, statement or
+            description handle and frees all memory that is 
+            associated with the handle.<BR>
+            <TABLE BORDER="1" WIDTH=600>
+            <TR><TD>handleType</TD><TD>input</TD><TD>Type of handle, either SQL_HANDLE_ENV (environment),
+                                        SQL_HANDLE_DBC (connection), SQL_HANDLE_STMT (statement) 
+                                        or SQL_HANDLE_DESC (descriptor).
+            <TR><TD>handle</TD><TD>input</TD><TD>Environment, connection, statement or descriptor handle
+            </TABLE>
+   Return codes: SQL_SUCCESS, SQL_ERROR, SQL_INVALID_HANDLE.
+                 Note that this Tcl procedure may return a TCL_ERROR if a severe
+                 error occurs in the Tcl extension layer unrelated to ODBC. <br>
+   Notes: Freeing a statement handle is equal to SQLFreeStmt with the SQL_DROP option. <BR>
+   Examples:
+
+<PRE># catch omitted. assuming $hstmt is a statement handle
+set rc [odbc SQLFreeHandle SQL_HANDLE_STMT $hstmt]
+if $rc .......
+# Re-using a statement handle by 'partially' freeing is no longer possible.
+# Free statement (drop it) and create a new one. 
+# Assume hdbc is a valid connection handle.
+odbc SQLFreeHandle SQL_HANDLE_STMT $hstmt
+odbc SQLAllocHandle SQL_HANDLE_STMT $hdbc hstmt 
+</PRE>
+</TD><TR>
+
+
+<TR><TD bgcolor=#999999 valign="top">
+** </TD><TD><b>SQLFreeStmt hstmt option </b>(ODBC 2.0 Only)<br>
+   Purpose: This function destroys/stops any statements, cursors, pending results and
+             buffers associated with a specific statement handle.<BR>
+            <TABLE BORDER="1" WIDTH=600>
+            <TR><TD valign="top">hstmt</TD><TD valign="top">input</TD><TD>Statement handle
+            <TR><TD valign="top">option</TD><TD valign="top">input</TD>
+               <TD>SQL_CLOSE: Close the cursor (if any) associated with hstmt.
+                             The handle remains valid. <br>
+                   SQL_DROP: Release hstmt and all resources associated with it.
+                             Destroys the handle. <br>
+                   SQL_UNBIND: Release all the column buffers that were bound by
+                               SQLBindCol (See <a href="m230.htm">Module 230</a>).
+                               The handle remains valid.<br>
+                   SQL_RESET_PARAMS: Release all parameter buffers created by
+                                     SQLBindParameter. The handle remains valid.<br>
+            </TABLE>
+   Return codes: SQL_SUCCESS, SQL_SUCCESS_WITH_INFO,
+                 SQL_ERROR, SQL_INVALID_HANDLE.
+                 Note that this Tcl procedure may return a TCL_ERROR if a severe
+                 error occurs in the Tcl extension layer unrelated to ODBC. <br>
+   Notes: <BR>
+   Examples:
+
+<PRE># (Ex.1) Destroy the statement handle et al., opposite of SQLAllocStmt
+set rc [odbc SQLFreeStmt $hstmt SQL_DROP]
+# (Ex.2) Clear the statement handle, i.e. destroy all resources associated
+# with the handle - exept for the handle itself, which can be reused.
+# This requires 3 steps:
+# 1. Release parameter buffers
+set rc [ SQLFreeStmt $hstmt SQL_FREE_PARAMS ]
+# 2. Release column buffers
+set rc [ SQLFreeStmt $hstmt SQL_UNBIND ]
+# 3. Close the cursor associated with the stmt handle
+set rc [ SQLFreeStmt $hstmt SQL_CLOSE ]
+--
+proc odbcClearStatement {} {
+ global henv hdbc hstmt
+ set rc [ odbc SQLFreeStmt $hstmt SQL_RESET_PARAMS ]
+ if [odbcResultIsFailure $rc] {
+   # error handling
+ }
+ set rc [ odbc SQLFreeStmt $hstmt SQL_UNBIND ]
+ if [odbcResultIsFailure $rc] {
+   # error handling
+ }
+ set rc [ odbc SQLFreeStmt $hstmt SQL_CLOSE ]
+ if [odbcResultIsFailure $rc] {
+   # error handling
+ }
+}
+</PRE>
+</TD><TR>
+
+</TABLE>
+
+See also the <a href="m220v.htm">Example XLTP and TPS procedures that prepare and execute SQL statements</a>.
+<p>
+Copyright 1998 HIE Europe
+</BODY>
+</HTML>

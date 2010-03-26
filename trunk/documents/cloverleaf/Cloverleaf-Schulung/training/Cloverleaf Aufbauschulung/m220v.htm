@@ -1,0 +1,385 @@
+<HTML>
+<HEAD>
+	<TITLE>Integrator Level II+ Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7>
+ Integrator - ODBC Training </H1>
+
+<h1> Module 220: Preparing and Submitting SQL Requests, Examples </h1>
+
+
+
+
+
+<h2> Supporting procedures </h2>
+
+
+<PRE>###########################################################################
+# odbcExecAndFetch: execute an SQL statement and return the results
+#
+# This is the main procedure for the suport of DIRECT SQL statements
+#
+# This procedure always results in TCL_OK. 
+# The returned value will be set to SQL_ERROR if an error occurs
+#
+proc odbcExecAndFetch { odbcHandleList cmd } { 
+	lassign $odbcHandleList henv hdbc hstmt
+
+	set rc [odbc SQLExecDirect $hstmt $cmd SQL_NTS]
+	if [odbcResultIsFailure $rc] {
+          # error handling
+	}
+    
+        # The retrieval of results will be discussed later.
+        # assume that the procedure 'odbcGetResults' returns
+        # the result (data or return code) of the executed statement.
+	set rc [odbcGetResults $odbcHandleList ]
+        
+        # clearing statement handle so it can be reused
+        odbcClearStatement $hstmt
+
+	return $rc
+}
+</PRE>
+
+
+<h2>Executing an SQL statement from an XLTP</h2>
+
+Because most
+SQL statements executed in the context of a translation of a single message
+are executed only once, they don't require
+any binding of parameters. The following procedure executes an SQL statement
+specified by the xlateInVals list and returns the result(s) of the query
+using the xlateOutVals list.
+
+
+<PRE>######################################################################
+# Name:         odbcSelect
+# Purpose:      Do a select from a translation
+#               SELECT FROM x WHERE y = <z>
+#               <z> is treated as an unquoted NUMERIC
+# UPoC type:    xltp (Xlate Pre-Proc)
+# Args:         none
+# Notes:        All data is presented through special variables.  The initial
+#               upvar in this proc provides access to the required variables.
+#
+#               This proc style only works when called from a code fragment
+#               within an XLT.
+#
+#
+#       xlateInVals             xlateOutVals
+#       ----------------------------------------------
+#       cl_odbc_id
+#       ColumnToSelect          ColumnToSelectValue
+#       Table
+#       CriteriaColumn
+#       CriteriaValue (Numeric)
+#
+#       SELECT ColumnToSelect FROM Table 
+#       WHERE CriteriaColumn = CriteriaValue 
+#
+proc odbcSelect {} {
+    upvar xlateId       xlateId         \
+	  xlateInList   xlateInList     \
+	  xlateInTypes  xlateInTypes    \
+	  xlateInVals   xlateInVals     \
+	  xlateOutList  xlateOutList    \
+	  xlateOutTypes xlateOutTypes   \
+	  xlateOutVals  xlateOutVals
+
+      global hstmt henv hdbc odbc_env
+
+      # odbc_env is a global array which holds a {henv hdbc hstmt} list
+      # for each of its legal indexes. It is created by xltOdbcInitialize.
+ 
+      lassign $xlateInVals cl_odbc_id ColToSel Table CriCol CriVal
+      
+      if {![info exists odbc_env($cl_odbc_id)]} {
+         # Invalid cl_odbc_id supplied. 
+         # this is a development error, which is why we use
+         # a Tcl error to notify the programmer
+         error "Invalid cl_odbc_id ($cl_odbc_id) in xltp odbcSelect"
+      }
+
+      lassign $odbc_env($cl_odbc_id) henv hdbc hstmt
+
+      if [cequal $CriVal ""] { set CriVal NULL }
+      set cmd "SELECT $ColToSel FROM $Table WHERE $CriCol = $CriVal"
+ 
+      # selectData executes the statement and uses odbcGetResults to
+      # return the results.
+      set rc [selectData $odbc_env($cl_odbc_id) $cmd]
+      if [odbcResultIsFailure $rc] {
+           echo "(odbcSelect) Error calling selectData"
+           return {} 
+      }
+
+      set xlateOutVals $rc
+}
+</PRE>
+
+<h2> Executing an SQL Statement from a TPS procedure</h2>
+
+The execution of SQL statements by TPS procedures is usually limited to
+Read and Write TPS procedures used by the UPoC driver. 
+
+The same SQL statements are executed over and over again, either to select
+new rows from a table or to insert new rows. Most TPS procedures
+execute prepared statements with bound parameters.
+<p>
+The procedure <em>tableRetrieveById</em> is a typical example of a UPoC
+Read-TPS. This procedure is based on the direct execution of an SQL statement.
+
+
+<PRE>######################################################################
+# tableRetrieveById: Retrieve records from the specified DSN and table
+#
+# UPoC type:    tps (Read-Proc in UPoC driver)
+# Args:         tps keyedlist containing the following keys:
+#               MODE    run mode ("start", "run" or "time")
+#               MSGID   message handle
+#               ARGS    user-supplied arguments:
+#                       DSN    Data source name
+#                       UID    User id (optional)
+#                       PWD    Password (optional)
+#                       TBL    Table name to select from
+#                       IDFLD  Fieldname of unique Id (e.g. Deals_Id)
+#                       FRL    Name of the frl file corresponding with TBL
+#                              The names of the fields in the FRL and those 
+#                              of the Columns in TBL have to match.
+#
+#   start: Connect to $DSN
+#   time : "SELECT * FROM $TBL WHERE $IDFLD > lastIdUsed ORDER BY $IDFLD"
+#
+proc tableRetrieveById { args } {
+    keylget args MODE mode                      ;# Fetch mode
+
+    global HciConnName
+    global _flist _frlName _tableName _idField _lastDealFname _lastDeal
+    global hstmt henv hdbc odbcHandleList
+
+    set dispList {}  
+
+    switch -exact -- $mode {
+	start {
+	    # Perform special init functions
+		keylget args ARGS uarg
+		keylget uarg DSN _dsn
+                set _userId "*"
+		keylget uarg UID _userId
+                set _passWord "*"
+		keylget uarg PWD _passWord
+                keylget uarg TBL _tableName 
+                keylget uarg IDFLD _idField
+		keylget uarg FRL _frlName
+		set _frlRec $_frlName
+
+                # FrioLoadData is an undocumented function, its result
+                # is a list of field definitions of fields defined
+                # in the FRL.
+		if [catch {FrioLoadData $_frlRec $_frlName} err] {
+	            # error handling
+		}
+		# Get the list of fields for master FRL
+		set _flist [FrioGetFieldList $_frlName]
+
+		set odbcHandleList [odbcInitialize $_dsn $_userId $_passWord]
+		lassign $odbcHandleList henv hdbc hstmt
+
+		set _lastDealFname ${HciConnName}.lastdeal
+		if [file exists $_lastDealFname] {
+			set fd [open $_lastDealFname r]
+			set _lastDeal [gets $fd]
+			close $fd
+			if ![ctype digit $_lastDeal] {set _lastDeal 0}
+		} else {
+			set _lastDeal 0
+		}
+
+		return ""
+	}
+
+	time {
+	       set cmd "SELECT * from $_tableName WHERE $_idField > $_lastDeal \
+                         ORDER BY $_idField"
+            
+	       set rc [selectData $odbcHandleList $cmd]
+	       if [odbcResultIsFailure $rc] { 
+                  # error handling
+                  return ""
+               }
+
+               # rc is not an err code, so it is the result of the select
+	       foreach row $rc {
+	           set gh [grmcreate frl $_frlName]
+
+                   # grmstore the columns into fields
+	           set idx 0
+	           foreach col $row {
+		        set field [lindex $_flist $idx]
+                        incr idx
+	                grmstore $gh $field c $col
+                   }
+                 
+                   # get new value of _lastDeal, store in file
+                   set dhList [grmfetch $gh $_idField]
+                   set _lastDeal ""
+	           foreach dh $dhList {
+		         append _lastDeal [datget $dh VALUE]
+		         datdestroy $dh
+	           }                
+		   set fd [open $_lastDealFname w]
+		   puts $fd $_lastDeal
+		   close $fd
+	
+                   set mh [grmencode $gh]
+                   lappend dispList "CONTINUE $mh"
+
+                   grmdestroy $gh 
+		}
+                # end foreach row
+	}
+    }
+    # end switch
+
+return $dispList
+}
+</PRE>
+
+This is a UPoC driver procedure that uses a Prepared odbc statement 
+with bound parameters.
+
+
+<PRE>######################################################################
+# tableRetrieveByTimestamp: Retrieve records from specified DB
+#
+# UPoC type:    tps (UPoC-driver Read-TPS)
+# Args:         tps keyedlist containing the following keys:
+#               MODE    run mode ("start", "run" or "time")
+#               MSGID   message handle
+#               ARGS    user-supplied arguments:
+#                       DSN    Data source name
+#                       UID    User id
+#                       PWD    Password 
+#                       TBL    Table name to select from
+#                       TSFLD  Fieldname of the SQL_TIMESTAMP field 
+#                              (e.g. LastModifDate) used for SELECTing.
+#                       FRL    Name of the frl file corresponding with TBL
+#
+#   start: Connect to $DSN
+#   time : "SELECT * FROM $TBL WHERE $TSFLD > lastTimeStamp ORDER BY $TSFLD"
+#
+proc tableRetrieveByTimeStamp { args } {
+    keylget args MODE mode                      ;# Fetch mode
+
+    global HciConnName
+    global _flist _frlName _tableName _tsField _lastTimeFname _lastTime
+    global hstmt henv hdbc
+
+    set dispList {} 
+
+    switch -exact -- $mode {
+	start {
+	    # Perform special init functions
+		keylget args ARGS uarg
+		keylget uarg DSN _dsn
+                set _userId "*"
+		keylget uarg UID _userId
+                set _passWord "*"
+		keylget uarg PWD _passWord
+                keylget uarg TBL _tableName 
+                keylget uarg TSFLD _tsField
+		keylget uarg FRL _frlName
+		set _frlRec $_frlName
+
+		if [catch {FrioLoadData $_frlRec $_frlName} err] {
+	           # error handling
+		}
+
+		# Get the list of fields for master FRL
+		set _flist [FrioGetFieldList $_frlName]
+
+                # initialize environment and create connection
+		if [catch {odbcInitialize $_dsn $_userId $_passWord} rc] {
+                   # error handling
+		}
+		lassign $rc henv hdbc hstmt
+
+                # read initial value of timestamp from file 
+		set _lastTimeFname ${HciConnName}.lasttime
+		if [file exists $_lastTimeFname] {
+			set fd [open $_lastTimeFname r]
+			set _lastTime [gets $fd]
+			close $fd
+		} else {
+			set _lastTime "1998-01-01 00:00:00.000"
+		}
+
+                # Prepare the select statement for execution
+	        set cmd "SELECT * FROM $_tableName WHERE $_tsField > ? ORDER BY $_tsField"
+                set rc [odbc SQLPrepare $hstmt $cmd SQL_NTS]
+                if [odbcResultIsFailure $rc] { # error handling }
+
+                # Bind the first (and only) parameter
+                set valueLen SQL_NTS
+                set rc [odbc SQLBindParameter $hstmt 1 SQL_PARAM_INPUT \
+                        SQL_C_CHAR SQL_TIMESTAMP 23 3 _lastTime 24 valueLen ]
+                if [odbcResultIsFailure $rc] { # error handling }
+  
+		return ""
+	}
+
+	time {
+                # close cursor (if open) before executing prepared statement
+                set rc [ odbc SQLFreeStmt $hstmt SQL_CLOSE ]
+                if [odbcResultIsFailure $rc] { # error handling }
+ 
+                # execute the prepared statement 
+                set rc [odbc SQLExecute $hstmt]
+                if [odbcResultIsFailure $rc] { # error handling }
+	
+                set odbcHandleList [list $henv $hdbc $hstmt]
+                if {[catch { odbcGetResults $odbcHandleList } rc]} {
+                   # error handling
+                }
+               
+                # rc contains the result of the select
+    		foreach row $rc {
+			set gh [grmcreate frl $_frlName]
+
+                        # grmstore the values of the cols into fields
+			set idx 0
+			foreach col $row {
+				set field [lindex $_flist $idx]
+                                incr idx
+                                grmstore $gh $field c $col
+			}
+                 
+                        # get new value of _lastTime, store in file
+                        set dhList [grmfetch $gh $_tsField]
+                        set _lastTime ""
+	                foreach dh $dhList {
+		           append _lastTime [datget $dh VALUE]
+		           datdestroy $dh
+	                }
+ 			set fd [open $_lastTimeFname w]
+			puts $fd $_lastTime
+ 		        close $fd
+
+ 		        set mh [grmencode $gh]
+                        lappend dispList "CONTINUE $mh"
+
+			grmdestroy $gh
+		}
+
+		return $dispList
+	}
+	}
+}
+</PRE>
+

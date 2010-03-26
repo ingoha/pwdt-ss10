@@ -1,0 +1,65 @@
+<dietOrder>
+<envelope>
+  <sent><ts>200110261410</ts></sent>
+  <reference><code>545</code></reference>      
+</envelope>
+
+<dietician>
+  <id>
+    <code type="N">046836</code>
+  </id> 
+  <nm>
+    <GIV>Regina</GIV>
+    <GIV>Johanna</GIV>
+    <GIV>Maria</GIV>
+    <PFX Q="NB">Graefin </PFX>
+    <PFX Q="VV">von </PFX>
+    <FAM Q="BR">Hochheim</FAM>
+    <FAM Q="SP">Weilenfels</FAM>
+    <SFX Q="PR">NCFSA</SFX>
+  </nm>
+  <tel>
+    <url use="WP">tel:+49(30)8101-724</url>
+    <url use="WP">fax:+49(30)8101-722</url>
+    <url use="WP">e-mail:regina@diets.de</url>
+  </tel>
+  <addr USE="WP">
+    <STR>Windsteiner Weg</STR>
+    <HNR>45a</HNR>
+    <ZIP>14165</ZIP>
+    <CTY>Berlin</CTY>
+  </addr>
+</dietician>
+
+<patient>
+  <id>
+    <code type="L">0000673654</code>
+  </id>
+  <nm>
+    <GIV>Johanna</GIV>
+    <GIV>Gertrude</GIV>
+    <FAM Q="BR">Brauer</FAM>
+  </nm>
+  <tel>
+    <url use="H">tel:+49(172)5761212</url>
+  </tel>
+  <dob><ts>19980115</ts></dob>
+  <diet>
+    <dietElement>
+      <code type="L">613</code>
+      <code type="S">74524</code>
+      <code type="S">89473</code> 
+      <code type="S">84365</code> 
+    </dietElement>
+    <dietInstruction>
+      <tray>late dinner tray</tray>
+    </dietInstruction>
+  </diet>
+
+  <clinicalObs>
+    <bloodType><code>B POS</code></bloodType>
+    <weight><code unit="Kg">65</code></weight>   
+  </clinicalObs> 
+</patient>
+
+</dietOrder>

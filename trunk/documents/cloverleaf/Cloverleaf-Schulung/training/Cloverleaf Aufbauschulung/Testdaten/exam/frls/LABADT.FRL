@@ -1,0 +1,77 @@
+# record layout: labadt
+#
+prologue
+    who:	HCI Network User
+    date:	Fri Oct 01 11:17:02 W. Europe Daylight Time 1999
+    version:	3.0
+    type:	frl
+end_prologue
+
+#
+# Include Files
+#
+
+
+#
+# Mask declarations
+#
+
+
+#
+# Field declarations
+#
+
+{NAME TranCode} {TYPE fmt} { FMT {
+    { FILL {\x20} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX TRAN }
+	    { WIDTH 10 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 14 }
+}}
+{NAME PatientName} {TYPE fmt} { FMT {
+    { FILL {\x20} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX NAME }
+	    { WIDTH 30 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 34 }
+}}
+{NAME PatientFloor} {TYPE fmt} { FMT {
+    { FILL {\x20} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX FLRN }
+	    { WIDTH 2 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 6 }
+}}

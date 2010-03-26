@@ -1,0 +1,116 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+<h1>
+ <img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 82: PDL: Examples: an acknak style PDL</h1>
+
+
+
+
+<PRE>/* $Id: msmeds_async.pdl,v 1.3 1996/03/19 19:57:34 mazanec Exp $ */
+/*
+ * Copyright (c) 1995, Healthcare Communications, Inc.  All Rights Reserved.
+ *
+ * msmeds_async.pdl - MSMeds async comm protocol
+ *
+ * Author: Larry V. Streepy, Jr.
+ * Date:   01/25/95
+ */
+
+define driver msmeds;
+    version: "2.0";
+end driver;
+
+/* This driver manages the transmission of messages to the MSMeds system.
+ *
+ * Protocol Description:
+ *
+ * Data Format:         ASCII
+ * Character Format:
+ *      Length:         1 start bit
+ *                      7 data bits
+ *                      1 stop bit
+ *      Parity:         odd
+ *
+ * Record Format:
+ *      Start Text      STX (ASCII 002, Hex 0x02)
+ *      Text
+ *      End of Text     ETB (ASCII 027, Hex 0x17)
+ *      BCC             3 ASCII characters (see below for calculation)
+ *      End of Message  ETX (ASCII 003, Hex 0x03)
+ *
+ * ACK/NAK:             ACK (ASCII 006, Hex 0x06 )
+ *                      NAK (ASCII 025, Hex 0x15 )
+ *
+ * Timeout:		Wait 30 seconds for ACK, then timeout
+ *
+ * The BCC calculation is a modulo 128, performed by adding all characters
+ * from the Start of Text to the End of Text inclusive.  The resulting
+ * unsigned value is then divided by 128 and the remaining 8-bit quantity
+ * is converted to 3 ASCII digit characters and added to the source message.
+ *
+ * &lt;stx>&lt;message text>&lt;etb>&lt;bcc1>&lt;bcc2>&lt;bcc3>&lt;etx>
+ *
+ *  o If the message is ACK'ed, we are done
+ *  o If the message is NAK'ed, mark message as NAK'ed and return failure
+ *  o If a timeout occurs, mark message as timeout and return failure
+ */
+
+
+/*Define the basic message structure.  Setup the bcc calculation to
+ * include the stx, data, and etb characters.
+ *
+ * Bcc calculations are handled using a PDL concept called a virtual field
+ * (in this case phrase-check).  Virtual fields are constructed
+ * automatically if we don't specify data for it in the write operation.
+ * In this case it will auto-calculate the BCC value and place it into the
+ * bcc field.
+ */
+
+define phrase basic-msg;
+    &lt;stx>;
+    phrase-check { method: xor, store-in: bcc,
+		encoding:ascii( width:3, pad:'0' ) } =
+        begin
+            field data = variable-array( not( &lt;etb> ) );
+	end;
+    &lt;etb>;
+    field bcc = fixed-array( 3, digit );
+    &lt;etx>;
+end phrase;
+
+/* Each message we write/read must be defined as a phrase.
+ * Define ACK and NAK.
+ */
+
+define phrase ack-msg;
+    &lt;ack>; 
+end phrase;
+
+define phrase nak-msg;
+    &lt;nak>; 
+end phrase;
+
+
+/**********************************************************************
+ * End of declarative section, TCL management functions start here.   *
+ **********************************************************************/
+
+#{#
+
+hci_pd_msg_style acknak phrase:basic-msg \
+			field:data \
+			ackphrase:ack-msg \
+			nakphrase:nak-msg \
+			timeout:10000 \
+			naktries:3 \
+			tmotries:3
+
+#}#

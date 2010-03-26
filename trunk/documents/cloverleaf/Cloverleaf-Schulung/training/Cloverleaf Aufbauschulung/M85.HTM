@@ -1,0 +1,412 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+<h1>
+ <img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 85: Customized PDLS</h1>
+
+
+
+
+In those cases where neither one of the transport protocols offered
+by the network configurator nor a styled PDL can be used as a protocol driver,
+one can either create a customized PDL or use a UPoC driver (see
+<a href="m90.htm">Module 90: UPoC driver</a> for a discussion of the UPoC driver).
+<p>
+A customized PDL consists of the same basic features as a styled PDL: first one
+has to define the appropriate phrase definitions. The session level transport protocol 
+determines both the actual message flow and the Tcl procedures within the PDL 
+required to ensure the message flow.
+
+
+<h2> The structure of customized PDLs </h2>
+
+PDLs are essentially event-driven. At any particular moment in time the
+ protocol driver will be in one of states as shown in figure 85.4.
+During each state, a particular event occurs that moves the message process forward
+or stops it, depending upon whether or not it encounters an error condition.
+Examples of events include: the receipt of data, shutting down the protocol thread and
+receiving data. The normal states during the lidfetime of a PDL can be descibed (using
+pseudo BNF syntax) as "DOWN NEW IDLE { { READ | WRITE } IDLE } DOWN"
+
+<p>
+<center>
+<img src="images/pdlstate.gif">
+<BR>Figure 85.4 PDL States
+</center>
+
+<p>
+A number of events are dealt with in
+a number of procedures which provide the interface between the core protocol
+driver within the engine and the Tcl code. These Tcl procedures are <em>eventhandlers</em> 
+(a.k.a. <em>Tcl entry points</em>),
+they are called by the protocol driver if an event occurs. 
+Only one operation can be in progress at a time, although it might involve reading 
+and writing several phrases.
+<UL>
+<LI><b>hci_pd.open </b><BR>
+This eventhandler is called to prepare a PDL driver for use.
+<LI><b>hci_pd.initialize </b><BR>
+This eventhandler is called at thread startup (right after hci_pd.open)
+and is commonly used to initialize the communication-device. 
+This eventhandler is mostly used for session setup. 
+<LI><b>hci_pd.read </b><BR>
+This eventhandler is called as soon as data is available. 
+(i.e. some data is in the inbound buffer)
+<LI><b>hci_pd.write</b><BR>
+This eventhandler is called whenever a message is to be written.
+<LI><b>hci_pd.<em>controlprocedure</em></b><br>
+These procedure names are reserved for future eventhandlers.
+<LI><b>hci_pd.shutdown</b> <BR>
+This eventhandler is called when the thread is stopped and is
+mostly used for session shutdown.
+</UL>
+
+
+
+
+<P>
+The core driver manages the message
+byte level format (i.e. the matching of phrases).
+ The Tcl code manages the sending and receipt
+of messages. Special care must be taken to avoid hanging the engine.
+<p>
+The event handling procedures can be implemented using a set of predefined procedures.
+These procedures (hci_pd_accept, hci_pd_send,
+hci_pd_receive, hci_pd_ignore_input, hci_pd_set_result_code, etc.) take care of the
+flow control between the PDL driver (the eventhandlers in Tcl) and the internals of the engine.
+<p>
+&quot;Continuations&quot; are used by the hci_pd_* procedures to handle
+asynchronous events. 
+A &quot;continuation&quot; allows the
+programmer to &quot;register&quot; a set of procedure names that
+are intended to handle a specific event. The core driver agrees
+to call that proc when the event occurs. Continuations provide
+for handling message arrival (<em>keyword</em> ok), device errors (error), timeouts (timeout), and more.
+
+Continuation procedures and the driver entry points are always called
+with a single argument, which is a Tcl-style containing what amounts
+to the argumants to the procedure. The arguments are passed as a structured keyed
+list to make it easier to write forward-compatible driver code.
+
+<h3> Supporting PDL procedures </h3>
+
+With a PDL driver, an operation such as reading or writing a complete message
+starts witha call to one of the Tcl entry points. Only one operation can be in 
+progress at any time. This exclusivety is enforced by the driver's state.
+
+<UL>
+<LI><b>Initialize/shutdown procedures</b><BR>
+The driver begins in the New state. When initialized, the state of the driver moves from New to Idle.
+<p>
+The hci_pd_open_device procedure (the only procedure used in the hci_pd.initialize event handler)
+establishes the connection between the driver and the operating system. 
+
+<LI><b>Read State</b><BR>
+The driver reads the inbound message. The state of the driver moves from Idle to Read. The core
+driver calls the hci_pd.read Tcl entry point. The read procedure uses the hci_pd_accept procedure
+to actually forward the data contained in a message phrase into the engine.
+If the process of receiving is completed or an error occurs, the driver
+state moves to Idle. <br>
+
+  <p>
+  The hci_pd.read event handler normally just prepares to
+  receive a message and sets up the continuations before returning.
+  <P>
+<UL>
+<LI><b>hci_pd_receive continuations</b><br>
+ This function prepares to parse the input as available in the input buffer. It attempts to match
+ the input against any of the given phrases. Keys in the continuations list include: phrase names,
+error and timeout.
+
+<LI><b>hci_pd_accept info</b><br>
+ This function arranges to deliver the specified portions of the input as a message into the Integrator. 
+ The info parameter is a keyed list. Keys include 'text' (to specify a list of regions to extract from
+ the input) and 'end' (to specify the number of bytes to extract).
+<LI><b>hci_pd_deliver data resultcode</b><br>
+ This functions delivers the value of the data paremeter as a message into the Integrator. The resultcode
+ should be set to 0.
+<LI><b>hci_pd_ignore_input len | -all | -until targetchar </b><br>
+ This function discards input from the beginning of the input buffer. Specify the amount of data to discard
+ by providing a number of bytes (len), discard all the input (by using the -all option), or discard all
+ bytes in the input buffer up to a specific character (by using the -until targetchar option).
+<LI><b>hci_pd_get_input region</b><br>
+ This function is used to retrieve a portion of the input buffer - without discarding anything from the buffer.
+ The region parameter is a list with 2 entries: the offset and length of the data region that are to be returned
+ by the procedure. 
+</UL>
+
+  <p>
+  <b>example #1</b>:
+<PRE>proc hci_pd.read { info } {
+   hci_pd_receive {{basic-msg read.ok} \
+                   {other-msg read.ok}
+                   {error read.error} \
+                   {timeout {10000 read.timeout}}}
+}
+
+or, alternatively put:
+
+keylset continuations basic-msg read.ok
+keylset continuations other-msg read.ok
+keylset continuations error     read.error
+keylset continuations timeout   [list 10000 read.timeout]
+hci_pd_receive $continuations
+</PRE>
+The event handler is set up (via its list of continuations)
+ to receive the basic-msg phrase or the other-msg phrase, and if this is matched the
+read.ok procedure will be invoked. 
+If an error occurs whilst reading a message, the read.error procedure will be invoked.
+If the message was partially matched, but not totally received within
+the defined timeout (10 seconds), the read.timeout procedure will be invoked.
+
+<p>
+<b>example #2</b>:
+<PRE>
+proc read.ok { info } {
+   keylset accept text [list [keylget info data] ]
+   keylset accept end [keylget info end]
+   hci_pd_accept $accept
+}
+</PRE>
+The hci_pd_accept procedure will be invoked using a keyed list that identifes the phrase region
+'data' as the data which is to be imported into the engine. 
+
+
+<LI><b>Write State</b><BR>
+The driver writes the outbound message. The state of the driver moves from Idle to Write. The core
+driver calls the hci_pd.write Tcl entry point. The write procedure uses the hci_pd_send procedure
+to actually sent a message phrase. If the sending process is completed or an error occurs, the driver
+state moves to Idle. <br>
+  <p>
+  
+  <P>
+  The hci_pd.write event handler associates message data
+  with a phrase and sets up the continuations.
+<p>
+
+<UL>
+<LI><b>hci_pd_send phrase data continuations</b><br>
+This function writes a phrase, where data is a keyed list that maps the phrase's field names to values to write. 
+Individual phase fields can be specified as containing a literal value or the contents of an engine message.
+</UL>
+
+  <p>
+  <b>example #1</b>:
+<PRE>define phrase basic-msg;
+    &lt;vt>;
+    field data = variable-array( not( &lt;fs> ) );
+    &lt;fs>; &lt;cr>;
+end phrase;
+
+proc hci_pd.write { info } { 
+   keylget info message MsgId
+   set MsgContent [list [list data [list message $MsgId]]] 
+
+   keylset continuations ok            write.done
+   keylset continuations error         write.error 
+   keylset continuations timeout       [list 10000 write.timeout] 
+   hci_pd_send basic-msg $MsgContent $continuations 
+}
+</PRE>
+
+
+
+<p><b>example #2</b>:
+<PRE>
+define phrase test-msg;
+  &lt;stx>;
+  field a = fixed-array ( 1, any );
+  field b = variable-array (not (&lt;etx>));
+  &lt;etx>;
+end phrase;
+</PRE>
+In order to populate all fields in the phrase with a corresponding value,
+the data parameter to the hci_pd_send procedure needs to be a keyed list
+with two elements:
+
+<PRE>hci_pd_send test-msg {{{a {literal Z}} {b {message $MsgId}}} \ 
+  {ok write.done} {error write.error} {timeout write.timeout}
+
+or, alternatively put:
+
+set data [list [list a [list literal Z]] [list b [list message $MsgId]]] 
+keylset continuations ok write.done
+keylset continuations error write.error
+keylset continuations timeout write.timeout
+hci_pd_send test-msg $data $continuations
+<PRE>
+</UL>
+Note: always use <b>hci_pd_report_exception</b> with a non-zero resultcode whenever an error occurs. 
+
+<h2>Annotated mlp PDL driver</h2>
+
+Initialize/shutdown procedures.
+
+<PRE>        proc hci_pd.open { config } {
+        }
+
+        proc hci_pd.initialize { info } {
+           hci_pd_open_device
+        }
+
+        proc hci_pd.shutdown { info } {
+        }
+</PRE>
+
+Writing state procedures.
+
+<PRE>        proc hci_pd.write { info } { 
+	    global MsgId MsgContent
+
+	    keylget info message MsgId
+	    set MsgContent [list [list data [list message $MsgId]]] 
+	    write.try "" 
+	} 
+
+
+        proc write.try { info } { 
+	    global MsgContent MsgId
+
+            keylset continuations ok            write.done
+            keylset continuations error         write.error 
+	    keylset continuations timeout       [list 10000 write.timeout] 
+	    hci_pd_send basic-msg $MsgContent $continuations 
+        } 
+
+        proc write.done { info } {
+            # no-op
+        }
+
+	proc write.timeout {info} { 
+	    write.try "" 
+	} 
+
+	proc write.error {info} { 
+	    hci_pd_report_exception 1 "mlp driver write line error"
+            hci_pd_ignore_input -all
+	} 
+</PRE>
+
+Reading state procedures.
+
+<PRE>	proc hci_pd.read {info} { 
+	    keylset continuations basic-msg     read.gotMessage 
+	    keylset continuations error         read.error 
+            # error is a generic name for no-match error and line-error
+	    keylset continuations timeout       [list 1000 read.timeout] 
+	    hci_pd_receive $continuations 
+	}
+
+        proc read.gotMessage { info } {
+            # accept data contents of msg
+            keylset accept text [list [keylget info data] ]
+            keylset accept end [keylget info end]
+            hci_pd_accept $accept
+        }
+
+	proc read.error {info} { 
+	    
+	    keylget info type type 
+	    switch -exact -- $type { 
+		line-error { 
+		    hci_pd_report_exception 1 "line fail: $type" 
+		    hci_pd_ignore_input -all 
+		} 
+		no-match { 
+		    hci_pd_ignore_input 1 
+		    hci_pd_ignore_input -until \xb 
+		    
+ 		} 
+		default { 
+		    hci_pd_report_exception 2 "unknown fail: $type" 
+		    hci_pd_ignore_input -all 
+		} 
+	    } 
+	} 
+	
+	proc read.timeout {info} { 
+	    hci_pd_ignore_input 1 
+	    hci_pd_ignore_input -until \xb 	    
+ 	} 
+</PRE>
+
+<h2>Init driver example</h2>
+
+
+Requested behaviour for the protocol driver is to send an initialization string "SOCC" once the
+protocol driver is started. This initialization string has to be acknowledged by a single "Y"
+character before any other processing can be done. The hci_pd.initialize Tcl handler is overwritten
+to achieve the desired behaviour.
+Note that the same behaviour could have been achieved using the protocol startup TPS procedure.
+
+
+<PRE>define phrase basic-msg;
+    field data = variable-array( any );
+end phrase;
+
+define phrase ack-msg;
+    "Y";
+end phrase;
+
+proc hci_pd.initialize { info } {
+    global hci_pd.device
+
+    keylset continuations ok init.sendSOCC
+    keylset continuations error init.Error
+
+    hci_pd_open_device $continuations
+}
+
+
+proc init.sendSOCC { info } {
+    keylset continuations error "write.error"
+    keylset continuations ok "init.wroteSOCC"
+    keylset continuations timeout [list 10000 init.timeout]
+
+    set msgContents [list [list data [list literal SOCC ]]]
+
+    hci_pd_send basic-msg $msgContents $continuations
+
+}
+
+proc init.wroteSOCC { info } {
+            keylset continuations ack-msg	init.gotSOCCResp
+	    keylset continuations basic-msg	init.gotSOCCResp
+	    keylset continuations no-match	init.gotSOCCResp
+	    keylset continuations line-error	read.error 
+	    keylset continuations timeout	[list 120000 init.timeout] 
+	    hci_pd_receive $continuations 
+}
+
+proc init.gotSOCCResp { info } {
+  hci_pd_ignore_input -all
+  # successfull termination of setup phase
+  hci_pd_set_result_code 0
+}
+
+proc init.Error { info } {
+   hci_pd_ignore_input -all
+   hci_pd_set_result_code 1  ;# INIT failed, TCP will be shutdown
+}
+
+proc init.timeout { info } {
+  hci_pd_ignore_input -all
+  hci_pd_set_result_code 1 
+}
+
+proc init.accept { info } {
+   # init finalized
+}
+</PRE>
+
+<p>
+Copyright 1998,2002
+</BODY>
+</HTML>

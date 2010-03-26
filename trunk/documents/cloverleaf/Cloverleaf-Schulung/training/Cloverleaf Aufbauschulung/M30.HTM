@@ -1,0 +1,155 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+ <img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 30: Code fragments, Part I </h1>
+
+
+
+
+
+A Code Fragment is a special type of Tcl procedure used within a translation. The procedure contains
+Tcl code that transforms fields within a message.
+Code Fragments are used in combination with one of the standard translation actions
+(mostly COPY) supported by the Integrator.
+<p>
+<center><img src="images/codefrag.gif"><BR>
+Figure 30.1 Xlate-thread: Translation action and Code Fragments
+</center>
+<p>
+Code Fragments (one of the procedure types used by the engine) can be used in 3 User Points of Control (UPoCs).
+The above figure shows a single translation action, mapping the value of 1 or more
+inbound fields (1) to 1 or more outbound fields (7).
+The Translation Pseudo Machine (4) takes care of the mapping of fields according
+to the translation action supplied (COPY, TABLE, MATH, CALL, etc.)
+The Pre-Procedure (2) and the
+Post-Procedure (6) are used to either preprocess the inbound fields or
+postprocess the outbound fiels involved in the translation action.
+The Tcl code in the Pre- and Post-procedures is mostly limited to the transformation
+of fields at the OSI presentation layer.
+<p>
+Code Fragments are mostly used in the form of a Pre-Procedure (2) in combination with
+a standard translation action. This type of Code Fragment is relatively easy to
+write and is used to transform the inbound fields (2)
+into values that are used by the translation action (3).
+<p>
+Suppose the translation action 'COPY result.[0] -> 1(0).ZDU.99003(0).[2]' is used in
+combination with the Pre-Procedure string_to_upper. The original inbound field (1)
+is preprocessed by the (2) string_to_upper procedure before the transformed field (3)
+is processed as an inbound field (3) by the translation action. The result of the
+translation action is processed by a Post-Procedure (6), if such a procedure
+has been defined.
+<p>
+Module 30 is focused on Code Fragments of type Pre-Procedure (2). All other types
+(4,6) are discussed in <a href="m42.htm">Module 42: Code Fragments, part II</a>.
+
+<p>
+Code fragments are normally created using the Custom Scripts tool. 
+A Procedure of type <em>xltp</em> has the following framework:
+
+<PRE>######################################################################
+# Name:		&lt;procName>
+# Purpose:	&lt;description>
+# UPoC type:	xltp PRE-PROC
+# Args:		none
+# Notes:	All data is presented through special variables.  The
+#               initial upvar in this proc provides access to the
+#               required variables.
+#
+#		This proc style only works when called from a code fragment
+#		within an XLT.
+#
+proc procName {} {
+    upvar xlateId       xlateId        \
+          xlateInList   xlateInList    \
+          xlateInTypes  xlateInTypes   \
+          xlateInVals   xlateInVals    \
+          xlateOutList  xlateOutList   \
+          xlateOutTypes xlateOutTypes  \
+          xlateOutVals  xlateOutVals     
+
+ # Within Pre-Procs, the xlateInVals and the XlateOutVals are
+ # the only variables used. See below for a discussion.
+
+ # The body of the procedure contains Tcl code that performs
+ # the transformation of the fields.
+ # The Tcl code is normally along the lines of:
+ # set xlateOutVals [ processing_function $xlateInVals ]
+}
+</PRE>  
+
+The <em>upvar</em> function creates a local variable (alias) that corresponds
+with a global variable.
+
+<UL>
+<LI><b> xlateInVals </b><BR>
+This field is a Tcl-list containing the values of the elements  
+(fields, subfields) at the inbound side of a translation action.
+<LI><b> xlateOutVals </b><BR>
+This field is a Tcl-list containing the values of the elements
+(fields, subfields) at the outbound side of the pre-procedure.
+<LI><b> xlateId, xlateInList, xlateInTypes, xlateOutList, xlateOutTypes </b><BR>
+These varaiables aren't used by Pre-Procedure Code Fragments and
+will discussed in <a href="m42.htm">Module 42: Code Fragments, part II</a>.
+</UL>
+<p>
+Note that a Pre-Procedure preprocesses the fields that are involved in a translation
+action <em>at the Inbound side</em>.
+Suppose the translation action "COPY result -> 1(0).ZDU.99003(0).[2]" is used.
+The variables xlateInVals and xlateOutVals will each contain
+one value because one inbound field is involved in the translation action.
+When the translation action "COPY field1, field2 -> 1(0).PID.00104.[2]" is used,
+xlateInVals and xlateOutVals will each contain 2 values.
+<p>
+A couple of examples of simple Pre-Procs:
+
+<PRE>proc string_to_upper {} {
+    upvar xlateId       xlateId        \
+          xlateInList   xlateInList    \
+          xlateInTypes  xlateInTypes   \
+          xlateInVals   xlateInVals    \
+          xlateOutList  xlateOutList   \
+          xlateOutTypes xlateOutTypes  \
+          xlateOutVals  xlateOutVals     
+
+set xlateOutVals [string toupper $xlateInVals]
+}
+</PRE>
+
+
+&nbsp; 
+
+
+<PRE>proc get_leftmost4 {} {
+    upvar xlateId       xlateId        \
+          xlateInList   xlateInList    \
+          xlateInTypes  xlateInTypes   \
+          xlateInVals   xlateInVals    \
+          xlateOutList  xlateOutList   \
+          xlateOutTypes xlateOutTypes  \
+          xlateOutVals  xlateOutVals     
+  # truncs the first inbound value,
+  # all other inbound values are ignored/destroyed.
+
+  set inbound_side [lindex $xlateInVals 0]
+  set outbound_side [crange $inbound_side 0 3]
+  set xlateOutVals $outbound_side      
+}
+</PRE>
+
+
+<p>
+See also the additional <a href="m30v.htm">XLT Pre-Proc, Examples</a>.
+
+<p>
+Copyright 1999,2001 Health-Comm GmbH [20][20][20][25][20]
+</BODY>
+</HTML>

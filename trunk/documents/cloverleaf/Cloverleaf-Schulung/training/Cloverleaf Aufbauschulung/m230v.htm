@@ -1,0 +1,144 @@
+<HTML>
+<HEAD>
+	<TITLE>Integrator Level II+ Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7>
+ Integrator - ODBC Training </H1>
+
+<h1> Module 230: Retrieving results, examples </h1>
+
+
+
+
+
+<h2> Retrieval of the Result Set</h2>
+
+
+<PRE>######################################################################
+# odbcGetResults: get the results of a select
+#
+# Can used both after execution of a Direct as well as a Prepared
+# SQL statement. The statement handle, the result set and bound
+# parameters will not be changed.
+#
+proc odbcGetResults { odbcHandleList } {
+
+    lassign $odbcHandleList henv hdbc hstmt
+    set retVal ""
+
+    # Find out how many result columns there are in the result
+  
+    set rc [odbc SQLNumResultCols $hstmt num_results]
+    if [odbcResultIsFailure $rc] {  # error handling  }
+
+    if {$num_results == 0} {
+        # If no result columns there is nothing to do, just exit
+	# echo "(odbcGetResults) No results - SQLNumResults returned 0"
+	return ""
+    }
+
+    # Now, for every column in the results, we do a column bind so each call
+    # to SQLFetch will have somewhere to put the data.
+
+    set cnt 0   ;# Start with column 1
+    while {$cnt &lt &nbsp $num_results} {
+	# Increment the count, step through all columns 
+	incr cnt
+
+	# Bind the inbound data column to a variable
+	set data($cnt) ""
+	 
+        set rc [odbc SQLBindCol $hstmt $cnt SQL_C_CHAR data($cnt) 64 SQL_NTS]
+	if [odbcResultIsFailure $rc] {  # error handling }
+    }
+
+    # Enter a "forever" loop.  We'll stay here until the SQLFetch statement 
+    # returns SQL_NO_DATA_FOUND.
+
+    while 1 {
+	# Get a row
+        set rc [odbc SQLFetch $hstmt]
+	if [odbcResultIsFailure $rc] { #error handling }
+
+	# See if we still have data, if not break from loop
+	if [cequal $rc SQL_NO_DATA_FOUND] { break }
+	
+	set row ""
+	loop cnt 1 [expr $num_results + 1] {
+            lappend row "$data($cnt)"
+	}
+	lappend retVal $row
+    }
+
+    return $retVal
+}
+</PRE>
+
+<h2>Retrieval of information <em>about</em> the Result Set</h2>
+
+The procedure <em>odbcGetTableDescription</em> shown below
+is a replacement for the SQLColumns (which is not supported in
+the current version of the Tcl ODBC API). The procedure is based on SQLDescribeCol
+which returns information similar to that returned by SQLColumns.
+
+
+<PRE>##########################################################################
+# odbcGetTableDescription - get table/column details from data source
+#
+# Since the SQLColumns call is not fully supported by
+# the Tcl API, we've got to use another method to
+# get the definition of the columns in a given table.
+# We accomplish this by preparing a dummy statement and
+# querying the result set for its column definition.
+#
+# Returns a list with n (the number of columns) entries:
+# Each column is described by a list with 5 entries:
+#        0. Column name
+#        1. ODBC SQL type of the column (e.g. SQL_INTEGER)
+#        2. Column Definition (a.k.a. its 'width' in bytes)
+#        3. Scale
+#        4. SQL_NULLABLE or SQL_NOT_NULLABLE, indicating whether
+#           the column can be empty.
+#
+# Returns an SQL resultcode, the description will be equal to
+# the empty list if an error occurrs.
+#
+proc odbcGetTableDescription { hstmt tableName descrVarName } {
+ upvar ${descrVarName} cdescr
+
+ # prepare statement
+ set cmd "SELECT * FROM $tableName"
+ set rc [odbc SQLPrepare $hstmt $cmd SQL_NTS]
+ if [odbcResultIsFailure $rc] { # error handling }
+
+ # Find out how many result columns there are in the result set
+ set rc [odbc SQLNumResultCols $hstmt numCols]
+ if [odbcResultIsFailure $rc] { # error handling }
+
+ set cnt 0	;# Start with column 1
+ set cdescr {}
+ while {$cnt &lt &nbsp $numCols} {
+   incr cnt
+   # Get a description of each column, append to list structure
+   set rc [odbc SQLDescribeCol $hstmt $cnt colName 50 \
+	    colNameLen sqlType colDef scale nullable]
+   if [odbcResultIsFailure $rc] { # error handling }
+   lappend cdescr [list $colName $sqlType $colDef $scale $nullable] 
+ }
+
+ # we're not going to execute the prepared statement.
+ # cancel result set, unbind columns, reset cursor, clean-up statement handle
+ if {[catch { odbcClearStatement $hstmt }]} {
+   # Although there was a problem with clearing the statement
+   # handle, the column description is valid.
+   echo "(odbcGetTableDescription) Warning: Ignoring error in odbcClearStatement"
+ }
+
+ return SQL_SUCCESS
+}
+</PRE>

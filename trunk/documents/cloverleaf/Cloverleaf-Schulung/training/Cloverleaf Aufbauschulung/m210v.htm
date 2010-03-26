@@ -1,0 +1,188 @@
+<HTML>
+<HEAD>
+	<TITLE>Integrator Level II+ Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7>
+ Integrator - ODBC Training </H1>
+
+<h1> Module 210: Initializing and Terminating an ODBC Connection </h1>
+
+
+
+
+
+Note that the 'old' 2.x odbc statements are still included (although solely as comments) 
+in these examples.
+
+
+<PRE>######################################################################
+# odbcInitialize: Allocate handles and connect to the database.
+#
+# Returns: (TCL_OK)     3-element list: {henv hdbc hstmt}
+#          (TCL_ERROR)  If an Tcl or Odbc error occurs
+#                       error will be echoed to Log by this proc
+#
+proc odbcInitialize { dbName userId passWord } {
+
+	# init ODBC interface, returns Tcl environment handle
+	# (odbc 2.x) odbc SQLAllocEnv henv
+        odbc SQLAllocHandle SQL_HANDLE_ENV SQL_NULL_HANDLE henv 
+
+	# allocate memory for connection handle, returns handle
+	# (odbc 2.x) odbc SQLAllocConnect $henv hdbc
+        odbc SQLAllocHandle SQL_HANDLE_DBC $henv hdbc
+
+	# Create an actual connection to the specified database.
+	# As this is a runtime issue, we have to prepare for failure.   
+ 
+	odbc SQLConnect $hdbc $dbName SQL_NTS $userId \
+              SQL_NTS $passWord SQL_NTS
+        If [odbcResultIsFailure $rc] {
+            # error handling
+	}
+	
+	# Allocate memory for a statement handle
+	# (odbc 2.x) odbc SQLAllocStmt $hdbc hstmt
+        odbc SQLAllocHandle SQL_HANDLE_STMT $hdbc hstmt
+ 
+	return [list $henv $hdbc $hstmt]
+}
+
+
+######################################################################
+# Name:         tpsOdbcInitialize
+# Purpose:      Initialize an ODBC connection at startup, create 3 globals
+# UPoC type:    tps
+# Args:         tps keyedlist containing the following keys:
+#               MODE    run mode ("start", "run" or "time")
+#               MSGID   message handle
+#               ARGS    user-supplied arguments:
+#                       DBNAME Name of the database environment
+#                       USERID Name of the account on DBMS (optional)
+#                              When this key is not supplied, the default
+#                              UID,PWD combination stored in /hci/dsn.auth will be used. 
+#                       PASSWD Password of account USERID (optional)
+#
+proc tpsOdbcInitialize { args } {
+    keylget args MODE mode                      ;# Fetch mode
+    global hstmt henv hdbc
+
+    set dispList {}                             ;# Nothing to return
+
+    switch -exact -- $mode {
+	start {
+		# Perform special init functions
+		keylget args ARGS uarg
+		keylget uarg DBNAME _dbName
+                set _userId "*"
+		keylget uarg USERID _userId
+                set _passWord "*"
+		keylget uarg PASSWD _passWord
+
+		# Note: When called from a Pre-Xlate route detail proc within
+		# an Xlate thread, care should be taken NOT to REinitialize odbc.
+		# Multiple routes (within 1 Xlate thrd) may call this proc. 
+
+		if {![info exists hstmt]} {
+		   # initialize odbc only if globals not yet set within
+		   # the current interpreter / thread.
+
+		   set rc [odbcInitialize $_dbName $_userId $_passWord]
+		   lassign $rc henv hdbc hstmt
+		}
+	}
+	run {
+		# 'run' mode always has a MSGID; fetch and process it
+		keylget args MSGID mh
+		return "{CONTINUE $mh}"
+	}
+    }
+}
+
+
+######################################################################
+# Name:	xltOdbcInitialize
+# Purpose: Create a odbc connection to a data source and set global
+#          variables used by other procs in this thread.
+# UPoC type:  xltp - CALL
+# Args:	dbName     - name of data source as defined in driver manager
+#       userd      - login name, or "*"
+#       password   - password, or "*" (valid only when userId = "*")
+#       cl_odbc_id - id of the connection. This id will be used to
+#                    identify this connection when querying lateron.
+#
+# Notes:	All data is presented through special variables.  The initial
+#		upvar in this proc provides access to the required variables.
+#
+#		This proc style only works when called from a code fragment
+#		within an XLT.
+#
+#
+proc xltOdbcInitialize { dbName userId passWord cl_odbc_id } {
+    upvar xlateId       xlateId		\
+	  xlateInList   xlateInList	\
+	  xlateInTypes  xlateInTypes	\
+	  xlateInVals   xlateInVals	\
+	  xlateOutList  xlateOutList	\
+	  xlateOutTypes xlateOutTypes	\
+	  xlateOutVals  xlateOutVals
+
+      global odbc_env
+      # odbc_env is a global array which holds a {henv hdbc hstmt} list
+      # for each of its legal indexes
+
+      if [info exists odbc_env($cl_odbc_id)] {
+           # The supplied env id has been used before.
+           echo "(xltOdbcInitialize): odbc_env '$cl_odbc_id' will be reused."
+      } else {
+           # new env id, create new handles + connection      
+            
+           set rc [odbcInitialize $dbName $userId $passWord]
+           # set globals used by Xlate thread
+           set odbc_env($cl_odbc_id) $rc
+      }
+
+      if [llength $xlateOutList] {
+        xpmstore $xlateId [lindex $xlateOutList 0] c $cl_odbc_id
+      }
+}
+
+
+######################################################################
+# odbcTerminate
+# Closes a connection; destroys statement, connection and environment handles.
+#
+proc odbcTerminate { henv hdbc { hstmtList {} } } {
+
+# free all statements in statement list (if any)
+foreach hstmt $hstmtList {
+    # (odbc 2.x) set rc [ odbc SQLFreeStmt $hstmt SQL_DROP ]
+    set rc [ odbc SqlFreeHandle SQL_HANDLE_STMT $hstmt ]
+    if [odbcResultIsFailure $rc] {
+      # error handling
+    }
+}
+
+set rc [odbc SQLDisconnect $hdbc]
+if [odbcResultIsFailure $rc] {
+   # error handling 
+}
+
+# (odbc 2.x) set rc [odbc SQLFreeConnect $hdbc]
+odbc SQLFreeHandle SQL_HANDLE_DBC $hdbc
+if [odbcResultIsFailure $rc] {
+  # error handling
+}
+
+# (odbc 2.x) set rc [odbc SQLFreeEnv $henv]
+odbc SQLFreeHandle SQL_HANDLE_ENV $henv
+if [odbcResultIsFailure $rc] {
+  # error handling
+}
+
+}

@@ -1,0 +1,167 @@
+# record layout: account
+#
+prologue
+    who:	HCI Network User
+    date:	Tue Apr 13 20:42:15 Romance Daylight Time 1999
+    version:	3.0
+    type:	frl
+end_prologue
+
+#
+# Include Files
+#
+
+
+#
+# Mask declarations
+#
+
+
+#
+# Field declarations
+#
+
+{NAME Comp_Id} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX # }
+	    { WIDTH 2 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 3 }
+}}
+{NAME Trx_Code} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {$} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 5 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 5 }
+}}
+{NAME Acct_No} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ai }
+	    { FILL 0 }
+	    { IN_VERIFY 0 }
+	    { JUST r }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 10 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 10 }
+}}
+{NAME Bank} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 20 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 20 }
+}}
+{NAME Trx_Date} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE yd }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST r }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 8 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 8 }
+}}
+{NAME Trx_Time} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE tm }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST r }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 4 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 4 }
+}}
+{NAME Name} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 30 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 30 }
+}}
+{NAME Trx_Amount} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ai }
+	    { FILL 0 }
+	    { IN_VERIFY 0 }
+	    { JUST r }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 15 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 15 }
+}}

@@ -1,0 +1,127 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7>
+ Integrator - Level II Training </H1>
+
+<h1> Module 60: Reply messages, examples </h1>
+
+
+
+
+
+<h2>Example #1: Manipulating the expect_reply FLAG</h2>
+
+When the 'await replies' option is used in the Network Configurator,
+Integrator will expect a reply for all messages sent.
+ The following procedure is an example of a TPS procedure that 'unsets' the
+expect_reply flag for a specific message type. 
+This has the effect that the protocol driver of the Integrator won't
+wait for a reply message when messages of this type are sent. 
+This procedure is to be used in the OB-TPS.
+
+
+<PRE>######################################################################
+# Name:		Unset_expect_reply_when_charge
+# Purpose:	Changes expect_reply FLAG to 0 for charge msgs (type 12)
+# UPoC type:	OB TPS
+# Args: 	tps keyedlist containing the following keys:
+#       	MODE    run mode ("start", "run" or "test")
+#       	MSGID   message handle
+#
+# Returns: tps disposition list:
+#          CONTINUE       of all messages           
+#
+
+proc Unset_expect_reply_when_charge { args } {
+    keylget args MODE mode              	;# Fetch mode
+    set dispList {}
+
+    switch -exact -- $mode {
+        start {
+            # Perform special init functions
+        }
+
+        run {
+	    # 'run' mode always has a MSGID; fetch and process it
+            keylget args MSGID mh
+
+            set msgType [msgget $mh 0 2]
+            if { [cequal $msgType "12"]} { 
+                msgmetaset $mh FLAGS {{expect_reply 0 }}
+            }
+  
+            lappend dispList "CONTINUE $mh"
+        }
+
+        default {
+	    error "Unknown mode '$mode' in Unset_expect_reply_when_charge"
+        }
+    }
+    return $dispList
+}
+</PRE>
+
+
+<h2>Example #2: Generating a reply message in the Generate Reply UPoC</h2>
+
+
+<PRE>######################################################################
+# Name:		generateWOPSYSack
+# Purpose:	Generate an ACK for the WOPSYS message just sent
+# UPoC type:	Generate Replies TPS
+# Args: 	tps keyedlist containing the following keys:
+#       	MODE    run mode ("start", "run" or "test")
+#       	MSGID   message handle
+#
+# Returns: tps disposition list:
+#          KILL       of copies of data messages passed to the TPS
+#          CONTINUE   of created ACK msgs
+#
+
+proc generateWOPSYSack { args } {
+    keylget args MODE mode              	;# Fetch mode
+    set dispList {}
+
+    switch -exact -- $mode {
+        start {
+            # Perform special init functions
+        }
+
+        run {
+	    # 'run' mode always has a MSGID; fetch and process it
+
+            keylget args MSGID mh
+            # mh contains a copy of the data message for which no reply was 
+            # received. Its metadata is non valid.
+
+            # .. Create a new reply message object
+            set repmh [msgcreate -meta {TYPE reply}]
+            set msgType [msgget $mh 0 2]
+            # set content of generated (i.e. fake) reply message
+            msgset $repmh "88REP$msgType"      
+
+            # .. Set the DESTCONN metadata field.
+            # The destination of the reply has to be the source of the
+            # data message that caused the reply to occur.
+            msgmetaset $repmh DESTCONN [msgmetaget $mh SOURCECONN]
+ 
+            lappend dispList "KILL $mh"
+            lappend dispList "CONTINUE $repmh"
+        }
+
+        default {
+	    error "Unknown mode '$mode' in generateWOPSYSack"
+        }
+    }
+    return $dispList
+}
+</PRE>
+
+

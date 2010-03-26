@@ -1,0 +1,133 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+ <img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+
+<h1> Module 70: A herd of UPoCs - when to use which UPoC </h1>
+
+
+
+
+
+
+<p>
+The goal of the Level II Training is for you to get familiar with the 
+Tcl scripting extensions
+to the engine. The various types of Tcl procedures described in previous modules
+can be used in different points (the User Points of Control - UPoCs) within the flow
+of a data message or a reply message. In the discussion of the engine architecture we already discussed some
+of these UPoCs.
+This module describes all avialable UPoCs and the functionality they provide.
+<p>
+<center><img src="images/upoc_overview.gif" hspace=7>
+<br>Figure 70.1 UPoC Overview 
+</center>
+<br>
+
+See Appendix F <EM> Inbound Data - User Points of Control </em> and
+<em> Inbound Reply - User Points of Control </EM> for a description of the flow
+of data and/or reply messages and the available UPoCs.
+<p>
+
+<h2><em>IB Protocol thread</em></h2>
+<UL>
+<LI><b>Protocol start-up </b><BR> 
+    Called at start-up of the protocol driver.
+    Can be used for the exchange of protocol startup messages such as password verification
+    or the determination of an initial sequence number. 
+    Some of these issues can also be resolved with a PDL.
+    See <a href="m95.htm">Module 95: Protocol Driver Control</a>.
+<LI><b>Reply generation</b> (IB Reply Protocol thread only)<BR>
+    Generate a reply message when a reply has not been received within a given time.
+<BR>See also <a href="m60.htm">Module 60: Reply Messages</a>
+<LI><b>IB TPS</b> processing. <BR>
+    Modify the message -at the message level.
+    Used to modify the contents of the message just after it has 
+    been received by a protocol driver. 
+ <BR>See also <a href="m51.htm">Module 51: IB TPS/OB TPS</a>
+</UL>
+
+<h2><em>Xlate thread</em></h2>
+<UL>
+<LI><b>TrxId determination</b> / Find Fixed Record/Variable Record TRX Id <BR>
+  Determines the transaction Id (TrxId, message type) based on the message content. 
+  <BR>See also <a href="m73.htm">Module 73: TrxId Determination Procedure</a>
+<LI>UPoCs related to the generation or execution of routes<BR>
+   <UL>
+   <LI><b>Generate Route</b> <BR>
+       Dynamically determine the routing and translation of messages.
+       <BR>See also <a href="m74.htm">Module 74: Routing Messages</a>
+   <LI><b>Raw Procs</b> <BR>
+       Modify the message -at the message level.
+       Used to modify the contents of the message or to change its routing.
+       <BR>See also <a href="m51.htm">Module 51: IB TPS/OB TPS</a> 
+           and <a href="m74.htm">Module 74: Routing Messages</a>
+   <LI><b><em>Xlate</em></b>
+    <UL>
+     <LI> <b>Route detail Pre-Proc</b>  <BR>
+    Modify the message -at the message level.
+    Used to modify the contents of the message or to change its routing, just before
+    it gets translated.  
+    <BR>See also <a href="m51.htm">Module 51: IB-TPS/OB-TPS</a>.
+     <LI> <b>Action Pre-Proc</b> / Code Fragment <BR>
+    Modify the contents of one or more fields before they are actually used as inbound
+    elements in a translation action.
+     <BR>See also <a href="m42.htm">Modules 30 and 42: Code Fragments</a>.
+     <LI> <b>Action CALL</b> / Code Fragment <BR>
+     Map the contents of one or more inbound fields to one or more outbound fields,
+     effectively creating a new translation action. (e.g. if-then-else, switch)
+   <BR>See also <a href="m42.htm">Module 42: Code Fragments</a>.
+     <LI> <b>Action Post-Proc</b> / Code Fragment
+    Modify the contents of one or more fields (i.e. those fields that are the result 
+    of the translation action) before the result of the translation is encoded to a message.
+   <BR>See also <a href="m42.htm">Module 42: Code Fragments</a>.
+     <LI> <b>Route detail Post-Proc</b> <BR>
+   Modify the message -at the message level.
+    Used to modify the contents of the message or to change its routing, just after
+    it has been translated. 
+    <BR>See also <a href="m51.htm">Module 51: IB-TPS/OB-TPS</a>.
+      </UL>
+   </UL>
+</UL>
+<center><img src="images/xlate_upocs.gif" hspace=7>
+<br>Figure 70.2 Xlate thread UPoCs 
+</center>
+
+<h2><em>OB Protocol thread</em></h2>
+<UL>
+<LI><b>OB TPS</b> Processing <BR>
+    Modify the message -at the message level.
+    Used to modify the contents of the message, just before the message is 
+    delivered by the protocol driver.
+   <BR>See also <a href="m51.htm">Module 51: IB TPS/OB TPS</a> 
+<LI><b>Pre-Write TPS</b> processing (available in version 3.6+)<BR>
+    This potocol driver UPoC is called just prior to the final write by
+    the protocol driver. To be used only when you need to either kill (based on timing specific data)
+    the message or add any
+    session or timing specific data to the message.
+    The only dispositions allowed in this UPoC are KILL and CONTINUE.
+<LI><b><em>Post-protocol processing</em></b>
+   <UL><LI><b>Send OK</b> <BR>
+       This UPoC is called when the message has been successfully delivered by the
+       protocol driver. Its argument is a copy of the message that was successfully delivered.
+       <LI><b>Send Fail</b><BR>
+       This UPoC is called when the message could not be delivered by the
+       protocol driver. Its argument is a copy of the message that wasn't delivered.
+       The reason for the failure of the delivery (time out, NAK) can be found in the 
+       metadata associated with the message. 
+   </UL> 
+</UL>
+
+
+<p>
+Copyright 1998,2001 Health-Comm GmbH
+</BODY>
+</HTML>

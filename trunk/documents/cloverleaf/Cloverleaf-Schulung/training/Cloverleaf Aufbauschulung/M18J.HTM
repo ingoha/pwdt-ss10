@@ -1,0 +1,182 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+ <img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 18: Overview of the 'upoc' package</h1>
+
+
+
+
+
+
+<h2>The com.quovadx.cloverleaf.upoc class package</h2>
+
+The Quovadx class package covers the following areas of functionality:
+<ul>
+<li>The Message and MessageMetaData classes;<BR>
+    See <a href="m20J.htm">Module 20: Message Classes</a>.
+<li>The Xlt** (code fragment, call) classes;<BR>
+    See <a href="m30J.htm">Module 30</a> and <a href="m42J.htm">Module 42</a>.
+<li>The <em>datum</em> class;<br>
+    See <a href="m40J.htm">Module 40: Datum Class</a>.
+<li>Generic Record Manager (grm, message parser) and Xlation Pseudo Machine (xpm);<BR>
+    See <a href="m41J.htm">Module 41: Grm & xpm</a>.
+<li>The Upoc, TPS and DispositionList classes;<BR>
+    See <a href="m50J.htm">Module 50: TPS Stacks</a>.
+<li>The TrxId determination class;<BR>
+    See <a href="m73J.htm">Module 73: TrxId determination</a>.
+<li>Monitor Statistics Interface.<BR>
+    See <a href="m100J.htm">Module 100: MSI extensions</a>.
+</ul>
+
+This module focuses on those classes in the package that provide generic support for
+the more message & mesage-parsing related classes as used by the Integrator.
+
+<br>
+All Java classes have been definid in the package com.quovadx.cloverleaf.upoc. Generic classes include the
+classes StringUtil, PropertyTree, CloverleafException,
+and CloverEnv. Of the CloverEnv class only thos methods that can be classified as being 'generic' will be discussed in this module.
+
+<p>
+The list below contains a description and a usage of a number of classes and methods
+that are used on a regular basis when one is developing scripts within the Integrator
+environment. 
+The flag that preceeds a class or method name (**,* or --) indicates
+the frequency of use of the procedure (frequently, regularly, almost never)
+and hence its importance.
+
+<h2>Class StringUtil</h2>
+
+The StringUtil class consists entirely of static methods. 
+
+
+See the <a href="javadoc/com/quovadx/cloverleaf/upoc/StringUtil.html">JavaDoc documentation</a> for full details of this class.
+
+<p>
+The following table lists some of the key methods.
+<TABLE>
+<TR><TD valign="top"  bgcolor=#999999>
+**</TD><TD><b>split string splitChar </b><BR>
+Purpose: This function splits a string into components based on
+the splitting character <em>splitChar</em>.
+The result of this function is a Tcl list of components.
+<BR>
+Notes: Mostly used to split a message based on a delimiter character. 
+The delimiter character is quite often a Tcl special character, e.g.
+\n (newline, ASCII 10), \r (carriage return, ASCII 13) or \xNN (hexademical 
+representation of character NN).
+The joining of message components based in a joining character can be accomplished
+with the fuction <b>join</b>. <BR>
+Examples:
+
+<PRE>hcitcl>set msg "Johnson,Peter,12,Engelwood Street,London,W1 5PX"
+hcitcl>set l [split $msg ,] ; echo [lindex $l 1] [lindex $l 0]
+Peter Johnson
+hcitcl>set msg "MSH|1|2|3|4\rPID|1|2|3\n"
+hcitcl>set segList [ split $msg "\r" ] ; echo $segList
+MSH|1|2|3|4 PID|1|2|3\n
+hcitcl>set fieldList [ split [ lindex $segList 0 ] "|" ] ; echo $fieldList
+MSH 1 2 3 4
+hcitcl>join $fieldList *
+MSH*1*2*3*4
+</PRE>
+
+</TD></TR>
+
+
+</TABLE>
+
+
+<h2>Class PropertyTree</h2>
+
+The PropertyTree class 
+
+
+See the <a href="javadoc/com/quovadx/cloverleaf/upoc/PropertyTree.html">JavaDoc documentation</a> for full details of this class.
+
+<p>
+The following table lists some of the key methods.
+<TABLE>
+<TR><TD valign="top"  bgcolor=#999999>
+**</TD><TD><b>split string splitChar </b><BR>
+Purpose: This function splits a string into components based on
+the splitting character <em>splitChar</em>.
+The result of this function is a Tcl list of components.
+<BR>
+Notes: Mostly used to split a message based on a delimiter character. 
+The delimiter character is quite often a Tcl special character, e.g.
+\n (newline, ASCII 10), \r (carriage return, ASCII 13) or \xNN (hexademical 
+representation of character NN).
+The joining of message components based in a joining character can be accomplished
+with the fuction <b>join</b>. <BR>
+Examples:
+
+<PRE>hcitcl>set msg "Johnson,Peter,12,Engelwood Street,London,W1 5PX"
+hcitcl>set l [split $msg ,] ; echo [lindex $l 1] [lindex $l 0]
+Peter Johnson
+hcitcl>set msg "MSH|1|2|3|4\rPID|1|2|3\n"
+hcitcl>set segList [ split $msg "\r" ] ; echo $segList
+MSH|1|2|3|4 PID|1|2|3\n
+hcitcl>set fieldList [ split [ lindex $segList 0 ] "|" ] ; echo $fieldList
+MSH 1 2 3 4
+hcitcl>join $fieldList *
+MSH*1*2*3*4
+</PRE>
+
+</TD></TR>
+
+
+</TABLE>
+
+<h2>Class CloverEnv</h2>
+
+The CloverEnv class...
+
+
+See the <a href="javadoc/com/quovadx/cloverleaf/upoc/CloverEnv.html">JavaDoc documentation</a> for full details of this class.
+
+<p>
+The following table lists some of the key methods.
+<TABLE>
+<TR><TD valign="top"  bgcolor=#999999>
+**</TD><TD><b>split string splitChar </b><BR>
+Purpose: This function splits a string into components based on
+the splitting character <em>splitChar</em>.
+The result of this function is a Tcl list of components.
+<BR>
+Notes: Mostly used to split a message based on a delimiter character. 
+The delimiter character is quite often a Tcl special character, e.g.
+\n (newline, ASCII 10), \r (carriage return, ASCII 13) or \xNN (hexademical 
+representation of character NN).
+The joining of message components based in a joining character can be accomplished
+with the fuction <b>join</b>. <BR>
+Examples:
+
+<PRE>hcitcl>set msg "Johnson,Peter,12,Engelwood Street,London,W1 5PX"
+hcitcl>set l [split $msg ,] ; echo [lindex $l 1] [lindex $l 0]
+Peter Johnson
+hcitcl>set msg "MSH|1|2|3|4\rPID|1|2|3\n"
+hcitcl>set segList [ split $msg "\r" ] ; echo $segList
+MSH|1|2|3|4 PID|1|2|3\n
+hcitcl>set fieldList [ split [ lindex $segList 0 ] "|" ] ; echo $fieldList
+MSH 1 2 3 4
+hcitcl>join $fieldList *
+MSH*1*2*3*4
+</PRE>
+
+</TD></TR>
+
+
+</TABLE>
+<P>
+Copyright 2002 Health-Comm GmbH
+</BODY>
+</HTML>

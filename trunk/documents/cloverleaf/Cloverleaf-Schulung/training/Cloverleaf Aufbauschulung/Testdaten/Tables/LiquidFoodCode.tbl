@@ -1,0 +1,34 @@
+# Translation lookup table
+#
+prologue
+    who:	HCI Network User
+    date:	Fri Aug 06 10:53:03 W. Europe Daylight Time 1999
+    version:	3.0
+    type:	tbl
+    bidir:	0
+    inname:	input
+    outname:	output
+end_prologue
+#
+dflt=N/U/0
+#
+102
+C/N/0
+#
+400
+W/N/0
+#
+613
+C/B/0
+#
+877
+C/N/0
+#
+889
+T/B/0
+#
+942
+C/L/0
+#
+944
+C/L/2

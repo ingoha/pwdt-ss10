@@ -1,0 +1,108 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7>
+ Integrator - Level II Training </H1>
+
+<h1> Module 30L: Lab: Xlt Pre-Proc (F) </h1>
+
+
+
+
+
+<h2>Notes: </h2>
+<UL>
+<LI>The use of the 'Custom Scripts editor' (available thru the GUI) is
+advisable. This tool automatically includes the required framework
+for the various types of Tcl procedures when creating a new procedure;
+<LI>The tclIndex file ($HCISITEDIR/tclprocs) is a file used by the Tcl interpreter to
+determine the source file for a given tclproc. If you create your procs
+using the hci custom script editor - then it will manage that relationship
+for you.  If however, you decide to use some other method to create
+your procs - you will need to run the mktclindex command to recreate the
+tclIndex file;
+<LI>Documenting the procedure within the Tcl code itself is considered
+"good programming practice". The '#' symbol denotes a comment;
+<LI>Use the testing tool extensively before using any procedure in a production environment.
+</UL>
+<p>
+
+
+<p>
+<b>1.</b> dumpPreProcArgs <br>
+Create a new Code Fragment (of type <em>xltp</em>) using the the Custom Scripts tool.
+Create a new Tcl file first using the custom scripts tool.
+
+<PRE>######################################################################
+# Name:		dumpPreProcArgs
+# Purpose:	Shows the value of the xlateInVals and xlateOuTvals list
+# UPoC type:	xltp PRE-PROC
+# Args:		none
+# Notes:	All data is presented through special variables.  The
+#               initial upvar in this proc provides access to the
+#               required variables.
+#
+#		This proc style only works when called from a code fragment
+#		within an XLT.
+#
+proc dumpPreProcArgs {} {
+    upvar xlateId       xlateId        \
+          xlateInList   xlateInList    \
+          xlateInTypes  xlateInTypes   \
+          xlateInVals   xlateInVals    \
+          xlateOutList  xlateOutList   \
+          xlateOutTypes xlateOutTypes  \
+          xlateOutVals  xlateOutVals     
+
+ # Within Pre-Procs, the xlateInVals and the XlateOutVals are
+ # the only variables used.
+
+ echo InVals: $xlateInVals
+ echo OutVals: $xlateOutVals
+}
+</PRE>  
+<b>1.1</b> Applying dumpPreProcArgs <BR>
+Apply the Pre-Proc "dumpPreProcArgs" to the translation created during
+the FOO deal management system lab. Add the procedure as a Pre-Proc to the translation action
+used to fill the "ExchangeRate" field. Save the updated translation definition
+and test it using the file <em>/tmp/class/deal_oe.dat</em>.
+Make sure you understand the output of the testing tool.<BR>
+Note that a more elaborate version (<em>gc_dumpPreProcArgs</em>)
+of this procedure is included in
+the gen_debug_procs.tcl file.
+
+<p>
+<b>2.</b> Xlate Fixes <BR>
+<b>2.1</b>Create a Xlt-Pre-Proc that changes the first 2 characters of the inbound
+field to "90" (e.g. by using <em>strsub</em>) if those two characters are equal to "20". 
+Apply the procedure to the translation created earlier on.
+Add the procedure as a Pre-Proc to the translation action
+for the 'User Number" field. Test the translation and the procedure
+using the testing tool. <br>
+<b>2.2</b>Create a Xlt-Pre-Proc that changes a number to its positive equivalent.
+If the value passed to it is already > 0, then no action is to be taken.
+Apply the procedure as a Pre-Proc to the translation actions used for the 
+Amount1 and Amount2 fields.Test the translation and the procedure
+using the testing tool. <br>
+
+<p>
+<b>3.</b> ZIP codes <BR>
+A Dutch bank close to the border of Germany uses a system
+that contains addresses of Dutch and German customers. Create a Xlt-pre-proc
+that transforms the Dutch ZIP codes (either formatted as "9999 AA" or "9999AA") to the format 
+"NL-9999AA". The German format "99999" has to be transformed to "D-99999".
+Any other inbound formats should be transformed to the empty string.
+<br>Hint: use either 'ctype' and 'clength', or 'string match' to check the layout
+of the strings.
+
+<p>
+Copyright 1998 HIE Europe [100]
+
+</BODY>
+</HTML>

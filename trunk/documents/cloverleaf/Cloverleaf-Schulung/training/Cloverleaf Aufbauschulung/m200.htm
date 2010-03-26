@@ -1,0 +1,151 @@
+<HTML>
+<HEAD>
+	<TITLE>Integrator Level II+ Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7>
+ Integrator - ODBC Training </H1>
+
+<h1> Module 200: An overview of ODBC </h1>
+
+
+
+
+
+The Open Database Connectivity interface (ODBC) is a standard originally
+developed by Microsoft that offers vendor-neutral access
+to different Database Management Systems (DBMS) using Structured Query Language (SQL).
+
+ODBC is a standard API providing access to a virtual database. By using ODBC an
+application doesn't have to overcome the idiosyncrasies in functionality, database protocols,
+or network protocols that differentiate one data source from another.
+
+<p>
+The ODBC architecture consists of 4 components:
+<UL>
+<LI><b>The application</b> <br>
+    An ODBC application can connect to one or more DBMS products from one or more
+    vendors. Once an application has established these connections, the driver or
+    drivers will process the ODBC SQL function calls from the application.
+    The Integrator Tcl interpreter has ODBC extensions built-in.
+<LI><b>A driver manager</b> <br>  
+    The driver manager loads the various drivers and provides a single entry point
+    to ODBC functions from different drivers. The driver manager is configured 
+    either by using a specific program or by editing the odbc.ini file.
+    Examples of driver managares include: the NT ODBC driver manager
+    and the Intersolv driver manager for various Unix platforms.
+<LI><b>The driver </b><br>
+    A driver implements the ODBC function calls and interacts with the data source.
+    With a connection to the data source established, a driver is capable of handling
+    requests to the DBMS that are made by the application, providing the necessary 
+    translations to and from the data source, and returning results to the application.
+    Drivers are either created and supplied by the database vendor (e.g. DB2, Sybase)
+    or by third parties (e.g. Intersolv).
+<LI><b>The data source or sources</b> <br>
+    A data source is mostly a (local/remote) database server; 
+    it could however just be a local file. 
+    Note that the data source has to be configured in such a way that it will allow
+    (remote) ODBC drivers to connect and execute statements.
+</UL>
+
+
+<h2>The ODBC API</h2>
+
+Based on the typical use of ODBC functions, 
+the following grouping of ODBC functions will be used:
+
+<UL>
+<LI><b>Initializing</b> <br>
+    The initialization of a connection requires the creation of 2 handles:
+    a connection handle and an environment handle.
+    Executing an allocate function will allocate memory for and define whatever datastructures
+    the implementation needs and assign a value to the handle that refers to these data structures.
+    <br>See <a href="m210.htm">Module 210: Initializing and Terminating an ODBC connection</a>
+    <UL>
+    <LI><b>Allocate environment</b><br>
+        The environment handle identifies the memory storage for global information,
+        in particular the defined connections to databases.
+    <LI><b>Allocate connect handle</b><br>
+        The connection handle identifies the memory storage for information
+        about a particular connection, i.e. it defines a database environment.
+    <LI><b>Connect to server</b><br>
+        Once the environment and connection handles have been allocated, the driver
+        will be able to establish the connection. 
+    </UL> 
+<LI><b>SQL Processing</b><br>
+    The processing of a SQL statement requires the creation of a statement handle, the execution
+    of a statement and the retrieval of the generated result set.
+    <UL>
+    <LI><b>Allocation and deallocation of statement handles</b><br>
+        The statement handle identifies the memory storage for information about a SQL
+        statement and its result set.
+        <br>See <a href="m220.htm">Module 220: Preparing and Executing SQL requests</a>
+    <LI><b>Statement processing</b><br>
+        The execution of a statement can be accomplished using two methods:
+        (1) Executing a buffered (Prepared) statement - used when an application submits 
+        the same SQL statement multiple times, and (2) Direct execution - used when the
+        SQL request is submitted once. Both methods of execution result in the preparation
+        of a result set.
+        <br>See <a href="m220.htm">Module 220: Preparing and Executing SQL requests</a>
+    <LI><b>Result processing </b><br>
+        Retrieving data from an SQL statement's result set and information about
+        a result set (e.g. metadata information).  
+        <br>See <a href="m230.htm">Module 230: Retrieving Results</a>
+    <LI><b>Transaction control</b><br>
+        Allows you to commit or roll back a transaction. The default mode for the
+        execution of ODBC statements is "auto-commit".
+        <br>See <a href="m230.htm">Module 230: Retrieving Results</a>
+    <LI><b>Error handling</b><br>
+        Returns the error information associated with a handle.
+        <br>See <a href="m210.htm">Module 210: Initializing and Terminating an ODBC connection</a>
+    </UL> 
+<LI><b>Terminating</b>
+    Deallocate memory used for storage of information associated with the various handles;
+    instruct driver to break the connection to the data source.
+    <br>See <a href="m210.htm">Module 210: Initializing and Terminating an ODBC connection</a>
+    <UL>
+    <LI><b>Free statement handle</b><br>
+    Deallocate memory used for the storage of information associated with the statement
+    handle(s) associated with a connection.
+    <LI><b>Disconnect from server</b><br>
+    Break the connection to the data source.
+    <LI><b>Free connection handle</b><br>
+   Deallocate memory used for the storage of information associated with the connection.
+    <LI><b>Free environment </b><br>
+   Deallocate memory used for the storage of information associated with the ODBC environment.
+    </UL> 
+</UL>
+
+<h2>The Tcl implementation of the ODBC API</h2>
+
+The ODBC extensions built into the Integrator are made available to the programmer as Tcl procedures.
+
+These extensions are Tcl wrappers around the C-based Micro Focus (formerly known as Intersolv)
+ ODBC API. Micro Focus supports version 3 (and version 2 for backwards compatibility)
+of the ODBC standard. 
+The syntax of the various procedures was intentionally created to be like the syntax of the 
+C procedures, e.g. all
+Tcl API procedures use the same parameters as the corresponding C API functions. 
+Because of the fact that the Tcl API is very similar to the C API, one set of ODBC
+documentation can be used for both APIs, and existing ODBC C code can be easily ported
+to Tcl.
+
+However, there are several generic differences between the C ODBC API and the Tcl extensions:
+<UL>
+<LI>For instances in C in which you specify an object as input, in Tcl one either
+specifies a string value through a literal value or with a $ preceding a variable name.
+<LI>Since Tcl doesn't support 'pointers', a Tcl variable name will
+have to be specified (mostly for output parameters).
+<LI>In Tcl, the only data type supported is character string. For portability reasons,
+other C types will be accepted, but the result is converted to a string.
+<LI>Many of the input and output values are specified in terms of named constants which
+are implemented in C as macros. These names are all supported in Tcl as string constants.
+</UL>
+<p>
+Copyright 1998 HIE Europe
+</BODY>
+</HTML>

@@ -1,0 +1,87 @@
+# Xlate Spec: jka_hl7_adm
+#
+prologue
+    who:	HCI Network User
+    date:	Tue Sep 28 11:18:38 W. Europe Daylight Time 1999
+    version:	4.0
+    type:	xlt
+    xlt_infile:	hl7 2.2 java ADT_A01
+    xlt_outfile:	fr jka_adm.frl
+end_prologue
+
+{ { OP COPY }
+    { ERR 0 }
+    { IN =STD# }
+    { OUT TransmitterId }
+}
+{ { OP COPY }
+    { ERR 0 }
+    { IN =ADM }
+    { OUT MsgType }
+}
+{ { OP COPY }
+    { ERR 0 }
+    { IN 0(0).PID(0).00106(0) }
+    { OUT PatientId }
+}
+{ { OP COPY }
+    { ERR 0 }
+    { IN {{0(0).PID(0).00108(0).[0]}} }
+    { OUT {{PatientName.[0]}} }
+}
+{ { OP COPY }
+    { ERR 0 }
+    { IN {{0(0).PID(0).00108(0).[1]}} }
+    { OUT {{PatientName.[1]}} }
+}
+{ { OP COPY }
+    { ERR 0 }
+    { IN 0(0).PID(0).00110(0) }
+    { OUT DOB }
+}
+{ { OP COPY }
+    { ERR 0 }
+    { IN 0(0).PV1(0).00133(0) }
+    { OUT PatientLocation }
+}
+{ { OP COPY }
+    { ERR 0 }
+    { IN 0(0).PV1(0).00137(0) }
+    { OUT AdmittingPhys }
+}
+{ { OP COPY }
+    { ERR 0 }
+    { IN 0(0).ZPI(0).91009(0) }
+    { OUT BloodType }
+}
+{ { OP TABLE }
+    { TBL LiquidFoodCode_LiquidOfChoice }
+    { SIDE input }
+    { ERR 0 }
+    { IN 0(0).ZDI(0).95003(0) }
+    { OUT Liquid_of_choice }
+}
+{ { OP TABLE }
+    { TBL LiquidFoodCode_Milk }
+    { SIDE input }
+    { ERR 0 }
+    { IN 0(0).ZDI(0).95003(0) }
+    { OUT Milk }
+}
+{ { OP TABLE }
+    { TBL LiquidFoodCode_Sugar }
+    { SIDE input }
+    { ERR 0 }
+    { IN 0(0).ZDI(0).95003(0) }
+    { OUT Sugar }
+}
+{ { OP COPY }
+    { ERR 0 }
+    { IN =0.660 }
+    { OUT Literes_a_day }
+}
+{ { OP COPY }
+    { ERR 0 }
+    { IN {{0(0).PID(0).00114(0).[4]}} }
+    { OUT ZipCode }
+}

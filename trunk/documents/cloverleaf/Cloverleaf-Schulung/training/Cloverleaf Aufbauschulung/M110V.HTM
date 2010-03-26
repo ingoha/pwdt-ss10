@@ -1,0 +1,108 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 110: Tcl Alert Option, example</h1>
+
+
+
+
+
+The follwing Tcl procedure will be executed when a thread goes down.
+It will notify the operator and attempt to restart the thread.  <BR>
+
+The procedure has been configured in the Alert Configurator as follows:
+
+<PRE>status    jka    == down once  : tcl {myalert jka "%A"}
+</PRE>
+
+In other words: when the status of the thread 'jka' is down, the tcl procedure 'myalert'
+will be executed with the parameters 'jka' and '%A'. %A contains the actual alert message.
+<p>
+ Note that the MSI-extensions are not used
+in this case, some of the command line utilities are used instead.
+
+
+<PRE>###############################################################
+proc myalert { thread { msg "" } } {
+global HciSite
+global HciRootDir
+
+set logmsg [ format "%-25s %8s %10s %s" [fmtclock [ \ 
+             getclock]] $HciSite $thread $msg ]
+
+setHciDirs
+
+set logfile $HciRootDir/$HciSite/myalertlog.asc
+
+set fh [ open $logfile a+ ]
+puts $fh $logmsg
+close $fh
+
+# mail someone...
+
+set mailbody "Integrator auto-alert mailer: \n "
+append mailbody $logmsg
+
+set operator hci
+
+write_file /tmp/tmp.alert.mail $mailbody
+exec mail -s "CL: $thread is down" $operator &lt; /tmp/tmp.alert.mail
+unlink /tmp/tmp.alert.mail
+
+# attempt to restart thread ...
+
+# Sample of output of 'hciconnstatus'
+# Process         Connection      State      Proto Status
+# --------------- --------------- ---------- ------------
+# att             archive         down       down       
+# att             his             down       down       
+# att             jka             down       down        
+
+set procname ""
+set connoutput [split [exec hciconnstatus ] \n]
+foreach line $connoutput {
+  if {[lindex $line 1] == $thread } { 
+      set procname [lindex $line 0] 
+      break
+  }
+}
+
+if {[clength $procname] > 0 } {
+
+  # Try restarting the thread.
+  if {[ catch { exec hcicmd -p $procname -c "$thread pstart" } ]} {
+
+     # Oops. Starting the thread failed. Process dead also ?
+    
+     # Sample output of 'hciprocstatus'
+     # Process         State    Message                                           
+     # --------------- -------- ----------------------------------
+     # att             dead     Normal exit at Fri Oct  3 10:00:48
+  
+
+      set procoutput [split [exec hciprocstatus ] \n]
+      foreach line $procoutput {
+        if {[lindex $line 0] == $procname } {
+           if {[lindex $line 1] == "dead"} {
+             # Houston, we've got a problem...
+
+
+
+           }
+           break
+        }
+      }
+  }
+}
+
+}
+</PRE>

@@ -1,0 +1,97 @@
+# record layout: hisresult
+#
+prologue
+    who:	HCI Network User
+    date:	Fri Oct 01 11:03:20 W. Europe Daylight Time 1999
+    version:	3.0
+    type:	frl
+end_prologue
+
+#
+# Include Files
+#
+
+include ExamMasks.frl
+
+#
+# Mask declarations
+#
+
+
+#
+# Field declarations
+#
+
+{NAME ResultCode} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 10 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 10 }
+}}
+{NAME ResultComment} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 30 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 30 }
+}}
+{NAME DoctorName} {TYPE maskuse} { MASK NameMask }
+{NAME ResultDateTime} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ts }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 12 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 12 }
+}}
+{NAME PatientWeigth} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST r }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ai }
+	    { FILL 0 }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 5 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 5 }
+}}

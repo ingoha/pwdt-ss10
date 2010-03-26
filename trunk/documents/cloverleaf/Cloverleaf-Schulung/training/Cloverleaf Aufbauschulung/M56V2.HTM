@@ -1,0 +1,605 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 56: Examples of Normalization </h1>
+
+
+
+
+
+<h2>Example: Normalization #1 </h2>
+
+The non standard message layout in this example is used to retrieve information 
+about a patient and his specimens from a database. 
+<p>
+The incoming message consists of three segments with
+headers N, S and R for Patient Information, Specimen and Lab Results
+respectively. Each segment of the message will have various fields containing
+the information pertaining to the headers.
+The S and R segments are the ones that are not standard or unpredictable in
+this case. Both of them can be repeated with the R segment nested within the S
+segment. This can be easily inferred as each patient can more than one specimen
+and each specimen, numerous lab results. 
+<p>
+The N, S and R segments contain "|"-symbol delimited fields. 
+The definition of the message is as follows:
+
+<PRE>N [{ S { R } }]</PRE>
+
+
+The following is an example of the message:
+
+<PRE>N|72653414|Tan Tsze Yuan|Nanyang Polytechnic|Singapore|19700116|||\r
+S|||18219|BLD|||01\r
+R|10000|TYP|A|NEG\r
+R|11000|ERY|850|*\r
+R|11010|PHA|36||mmol/l\r
+</PRE>
+
+
+We've intentionally configured the laboratory system to use "|" as a field delimiter 
+in the N, S and R segments because
+we intend to normalize this message structure to an HL7 message.
+The HL7 variant message ZZZ which is to be the 'normalized' message looks like this :
+
+<PRE>MSH
+ZZN
+[
+   {
+      ZZS
+      { ZZR }
+   }
+]
+</PRE>
+
+
+The ZZN, ZZS and ZZR segments will correspond to the N, S and R segments in the
+FRL.
+Once normalized, the HL7 variant message can easily be translated to the
+required HL7
+message, in our case, the HL7 ORU message. 
+<p>
+The functions GenerateHL7Variant 
+is placed in the Inbound Data TPS and performs the
+'normalization'.
+
+
+<PRE>######################################################################
+# Name:         GenerateHL7Variant
+# Purpose:      Generate a HL7 variant from a non standard message
+#               structure with repeating segments
+# UPoC type:    tps
+# Args:         tps keyedlist containing the following keys:
+#               MODE    run mode ("start", "run" or "time")
+#               MSGID   message handle
+#
+# Returns: tps disposition list:
+#          KILL		Of the non standard message
+#          CONTINUE	Of the normalized message
+#
+
+proc GenerateHL7Variant { args } {
+    keylget args MODE mode                      ;# Fetch mode
+
+    set dispList {}                             ;# Nothing to return
+
+    switch -exact -- $mode {
+        start {
+                return {}
+        }
+
+        run {
+            # 'run' mode always has a MSGID; fetch and process it
+            keylget args MSGID mh
+
+            set norm "MSH|^~\\&|||||||ZZZ||P|2.3|\r"     ;# HL7 ZZZ header      
+            set segList [split [msgget $mh] \r]
+            foreach seg $segList {
+                    set segType [sring index $seg 0]
+                    # append either ZZN, ZZS or ZZR
+                    append norm ZZ $segType | [string range $seg 2 end] \r
+            }       
+            msgset $mh $norm
+
+            lappend dispList "CONTINUE $mh"
+            return $dispList
+        }
+
+        default {
+            error "Unknown mode '$mode' in GenerateHL7Variant"
+            return ""
+        }
+    }
+}
+</PRE>
+
+(Problem and solution provided by Tan Tsze Yuan of Nanyang Polytechnic, Singapore)
+
+
+<!-------- too difficult, uses internal code
+
+<h2>Example: Normalization #2</h2>
+
+The input message in this example consists of a sequence of segments. Each segment is
+an FRL, the message however isn't. The sequence of segments is as follows:
+
+<PRE>P (Patient demo Details)
+T (Test)
+R (Results)
+R (Results)
+.
+.
+</PRE>
+
+i.e. there can be <b>any</b> number of R type messages
+<p>
+Because we don't know how many times the R segment repeats, we can't define
+a FRL. We intend to normalize the message into an HL7 variant message with
+the following structure:
+
+<PRE>MSH
+ZPT
+{ ZZR }
+</PRE>
+
+The individual fields in the input message will have to be fetched and stored
+in HL7 fields. 
+The input message is basically a sequence of FRL formatted segments.
+We use 2 internal Integrator procedures 
+(FrioLoadData and FrioGetFieldList) to access the FRL defintions
+of the P, T and R segments and retrieve a list of field names. 
+By iterating over all the fields in a FRL definition of a segment we can use 
+grmfetch to retrieve the value of the fields in the segments.
+These values can then be used to build a HL7 segment in the normalized message.
+<p>
+Once normalized, The messages have to translated to the HL7 ORU message which
+contains a repeating OBX segment for the results.
+<p>
+The functions GenerateHL7Variant 
+is placed in the Inbound Data TPS and performs the
+'normalization'.
+
+
+<PRE>######################################################################
+# Name:         GenerateHL7Variant
+# Purpose:      Generate a HL7 variant message from a FRL with repeating 
+#               segments. Format of the resulting ZZZ message:
+#               MSH ZPT { ZZR }
+#               
+# UPoC type:    tps (IB-TPS)
+# Args:         tps keyedlist containing the following keys:
+#               MODE    run mode ("start", "run" or "time")
+#               MSGID   message handle
+#
+# Returns: tps disposition list:
+#          CONTINUE       Of normalized messages
+#
+proc GenerateHL7Variant { args } {
+    keylget args MODE mode                      ;# Fetch mode
+
+    global PTFieldList RFieldList PTLen RLen
+
+    set dispList {}                             ;# Nothing to return
+
+    switch -exact -- $mode {
+        start {
+                if [catch {FrioLoadData PTrec PTformat.frl} err] {
+                    # configuration error. Alert operator by causing a Tcl error
+		    error "ERROR loading frl PTformat.frl: '$err'"                    		    
+		}
+		# Get the list of fields for P and T FRLs
+		set PTFieldList [FrioGetFieldList PTrec ]
+                # Size of P and T FRLs (the sum of the length of all fields)
+                set PTLen 136
+
+                if [catch {FrioLoadData Rrec Rformat.frl} err] {
+                    # configuration error. Alert operator by causing a Tcl error
+		    error "ERROR loading frl Rformat.frl: '$err'"                    		    
+		}
+		# Get the list of fields for the R FRL
+		set RFieldList [FrioGetFieldList Rrec ]
+                # Size of R FRL
+                set RLen 88
+
+                return {}
+        }
+
+        run {
+            # 'run' mode always has a MSGID; fetch and process it
+            keylget args MSGID mh
+
+            set norm "MSH|^~\\&|||||||ZZZ||P|2.3|\r"     ;# HL7 ZZZ header
+
+            # Parse P and T, store values in HL7 segment
+            append norm "ZPT|"
+            set gh [grmcreate -msg $mh frl PTformat.frl]
+            foreach field $PTFieldList {
+               set datList [grmfetch $gh $field]
+               foreach dh $datList {
+                  append norm [datget $dh VALUE]
+                  datdestroy $dh
+               }
+               append norm "|"
+            }          
+            append norm "\r"
+            grmdestroy $gh
+
+            # Remove P and T from beginning of the message
+            msgset $mh {} 0 $PTLen
+        
+            # Parse R, store values in HL7 segment
+            while { [msglength $mh] >= $RLen } {
+                append norm "ZZR|"
+                set gh [grmcreate -msg $mh frl Rformat.frl]
+                foreach field $RFieldList {
+                   set datList [grmfetch $gh $field]
+                   foreach dh $datList {
+                      append norm [datget $dh VALUE]
+                      datdestroy $dh
+                   }
+                   append norm "|"
+                }          
+                append norm "\r"
+                grmdestroy $gh
+                # Remove R just processed from message
+                msgset $mh {} 0 $RLen
+            }
+
+            # change content of the message to its normalized version             
+            msgset $mh $norm
+            lappend dispList "CONTINUE $mh"
+
+            return $dispList
+        }
+
+        default {
+            error "Unknown mode '$mode' in GenerateHL7Variant"
+            return ""
+        }
+    }
+}
+</PRE>
+
+(Problem description provided by Bill May of Power Solutions DTD, Australia)
+
+
+<h2> Example #x: Foo messages </h2>
+
+
+<PRE>######################################################################
+# Name:		normalizeFooToHL7
+# Purpose:	Normalize incoming Foo msgs to HL7
+# UPoC type:	tps
+# Args: 	tps keyedlist containing the following keys:
+#       	MODE    run mode ("start" or "run")
+#       	MSGID   message handle
+#
+# Returns: tps disposition list:
+#          CONTINUE	Of normalized Foo messages
+#          ERROR	Of messages that couldn't be normalized.
+#
+
+proc normalizeFooToHL7 { args } {
+    keylget args MODE mode              	;# Fetch mode
+
+    switch -exact -- $mode {
+        start {
+            return ""
+        }
+
+        run {
+	    # 'run' mode always has a MSGID; fetch and process it
+            keylget args MSGID mh
+
+            # clear disposition list
+            set dispList {}
+
+            # get type of original mesage contents
+            set fooMsgType [msgget $mh 0 14]
+            # map foo msg type to name of HL7 segment
+            set msgTypeList "{{LABREQUEST   :} ZLR} \
+                             {{DEM.REQUEST  :} ZRQ} \
+                             {{END.OF.BATCH :} ZEB} \
+                            "
+            if {[keylget msgTypeList $fooMsgType zseg] == 1} {
+                # known msgType, to be translated to $zseg
+
+                set hl7MsgHandle [ _mapFooToHl7Segment $mh $zseg]
+                # returned value is msgHandle or "" - the latter indicates 
+                # some kind of parse error
+
+                if {[clength $hl7MsgHandle] == 0} {
+                  lappend dispList "ERROR $mh"
+                } else {
+                  msgset $mh [msgget $hl7MsgHandle]
+
+                  # destroy hl7MsgHandle
+                  msgdestroy $hl7MsgHandle
+
+                  lappend dispList "CONTINUE $mh"
+                }
+            } else {
+                  # duh.. received unexpected/unknown Foo msgType.
+                  echo normalizeFooToHL7(IB-TPS): WARNING: moved msg with \
+			TrxId $fooMsgType to error database.
+                  flush stdout
+                  msgmetaset $mh USERDATA "{error {normalizeFooToHL7(IB-TPS): \
+			unknown TrxId $fooMsgType within script.} }"
+                  lappend dispList "ERROR $mh"
+            } 
+            return $dispList
+        } 
+
+        default {
+	    error "Unknown mode '$mode' in normalizeFooToHL7"
+        }
+    }
+}
+
+##########################################################################
+# Name:		_mapFooToHl7Segment
+# Purpose:	parse Foo msg, grmStore fields into HL7 structure
+#
+proc _mapFooToHl7Segment { fooMsgHandle hl7SegName } {
+  # returns msgHandle of (new) msg containing the created hl7 msg, or 
+  # returns "" in case of parse error.
+  # In case of error, the USERDATA metafield field is filled with an 
+  # error description. 
+  set parseErr 0
+  set ind 0
+  set hl7MsgHandle ""
+
+  set hl7Msg "MSH@^\x02\\&@@@@@@@XXX@XXX@P@2.2\x0dXXX@@@@@"
+  # use \x02 as field repetition seperator
+  regsub -all "XXX" $hl7Msg $hl7SegName hl7Msg 
+  # change message type and segment name
+  regsub -all "@" $hl7Msg \x01 hl7Msg   
+  # use \x01 as field separator, that ascii value not contained in data..
+
+  set fooMsg [msgget $fooMsgHandle 14 end]
+  set msgLen [clength $fooMsg]
+  set originalFooMsg $fooMsg           
+  # save contents in case we need to restore foo msg contents
+
+  msgset $fooMsgHandle $hl7Msg         
+  # init original msgHandle with HL7 header
+  if {[catch {set grmHandle [ grmcreate -msg $fooMsgHandle -warn warnMsgs \
+					hl7 2.2 foo $hl7SegName ]} ]} {
+    echo _mapFooToHl7Segment(IB-TPS): ERROR creating grmhandle
+    msgset $fooMsgHandle $originalFooMsg     
+    # restore Foo msg contents
+    msgmetaset $fooMsgHandle USERDATA "{error {_mapFooToHl7Segment(IB-TPS):\
+		 ERROR creating grmhandle.} }"
+    return ""
+  }
+
+  # Parse the inbound Foo msg..
+  while { $ind < $msgLen } {
+    set ind9 [expr { $ind + 9 }]
+    set ind10 [expr { $ind + 10 }]
+    if {[string index $fooMsg [expr { $ind + 4}]] == ","} {
+       set valLen [string trimleft [string range $fooMsg \
+			[expr {$ind + 5}] [expr {$ind + 8}]] "0"]
+       if {[clength $valLen] == 0} { set valLen 0 } 
+       # in case we trimmed all 0's out of '0000'
+       if {[ctype digit $valLen] == 1} {
+          if {[string index $fooMsg $ind9] == ":"} {
+             set attrib [string range $fooMsg $ind10 [expr {$ind9 + $valLen}]]
+             set attribId [string range $fooMsg $ind [expr {$ind + 3}]]   
+
+             # attribId contains the attributeId as used by FOO. It is a 
+             # 4-byte ascii encoded number, right-justified, left padded with 
+             # zeroes. The range is currently 0001 to 0300.
+             # The 2.2 variant 'Foo' uses the same field Id numbers - with 
+             # offset 90000. A (Foo) attribId can be simply mapped to a (HL7) 
+             # fieldId by prepending the attribId string with "9". The result 
+             # is a fieldId in the range of 90001 to 90300.
+                      
+             set hl7FieldId "0(0)."
+             append hl7FieldId $hl7SegName ".9" $attribId
+
+             # strip leading and trailing spaces from attrib value
+             set attrib [string trim $attrib " "]
+                    
+             if {$valLen == 0} {
+                # Fooa did sent an <active null> value
+                if {[catch {grmstore $grmHandle $hl7FieldId v null }]} {
+                    echo _mapFooToHl7Segment(IB-TPS) WARNING: attribId $attribId \
+				not defined for $hl7SegName
+                }
+             } else {
+                if {[catch {grmstore $grmHandle $hl7FieldId c $attrib}]} {
+                    echo _mapFooToHl7Segment(IB-TPS) WARNING: attribId $attribId \
+				not defined for $hl7SegName
+                }
+             }
+
+          } else { set parseErr 3 ; set errPos $ind9 }  
+       } else { set parseErr 2 ; set errPos [expr {$ind + 5}] }  
+    } else { set parseErr 1 ; set errPos [expr { $ind + 4}] }  
+
+    if {$parseErr > 0} {
+      echo _mapFooToHl7Segment(IB-TPS) ERROR: attribute structure cannot be parsed
+      msgset $fooMsgHandle $originalFooMsg     
+      # restore Foo msg contents
+      msgmetaset $fooMsgHandle USERDATA "{error {_mapFooToHl7Segment(IB-TPS) \
+		Foo attribute structure cannot be parsed.} }" 
+      switch $parseErr {
+       1 {
+         echo comma missing at position $errPos (0-based)
+       }
+       2 {
+         echo attribute length at position $errPos (0-based) contains \
+		non-digit characters
+       }
+       3 {
+         echo colon missing at position $errPos (0-based)
+       }
+       default {
+         echo unspecified parse error
+       }
+      } 
+      echo $fooMsg
+      flush stdout
+      return ""
+    }
+
+    set ind [expr { $ind9 + $valLen + 1}]
+  } 
+  # end while
+
+  # encode new hl7 msg
+  set hl7MsgHandle [grmencode -warn warnMsgs $grmHandle]
+ 
+  # clean up all handles, except for $hl7MsgHandle and $fooMsgHandle
+  grmdestroy $grmHandle
+
+  return $hl7MsgHandle
+} 
+</PRE>
+
+
+
+<h2> Example: Normalization #3</h2>
+
+The procedure <em>tableRetrieveById</em> is a typical example of a UPoC
+Read-TPS that uses a SQL statement to retrieve records/messages. 
+This procedure is based on the direct execution of an SQL statement.
+<p>
+Note that <em>FrioLoadData</em> and <em>FrioGetFieldList</em>, used to retrieve
+a list of field names in a FRL, are defined internally within the engine. As such
+they may not be present in a future version of the Integrator, or their behaviour may
+have changed.
+
+
+<PRE>######################################################################
+# tableRetrieveById: Retrieve records from the specified DSN and table
+#
+# UPoC type:    tps (Read-Proc in UPoC driver)
+# Args:         tps keyedlist containing the following keys:
+#               MODE    run mode ("start", "run" or "time")
+#               MSGID   message handle
+#               ARGS    user-supplied arguments:
+#                       DSN    Data source name
+#                       UID    User id (optional)
+#                       PWD    Password (optional)
+#                       TBL    Table name to select from
+#                       IDFLD  Fieldname of unique Id (e.g. Deals_Id)
+#                       FRL    Name of the frl file corresponding with TBL
+#                              The names of the fields in the FRL and those 
+#                              of the Columns in TBL have to match.
+#
+#   start: Connect to $DSN
+#   time : "SELECT * FROM $TBL WHERE $IDFLD > lastIdUsed ORDER BY $IDFLD"
+#
+proc tableRetrieveById { args } {
+    keylget args MODE mode                      ;# Fetch mode
+
+    global HciConnName
+    global _flist _frlName _tableName _idField _lastDealFname _lastDeal
+    global hstmt henv hdbc odbcHandleList
+
+    set dispList {}  
+
+    switch -exact -- $mode {
+	start {
+	    # Perform special init functions
+		keylget args ARGS uarg
+		keylget uarg DSN _dsn
+                set _userId "*"
+		keylget uarg UID _userId
+                set _passWord "*"
+		keylget uarg PWD _passWord
+                keylget uarg TBL _tableName 
+                keylget uarg IDFLD _idField
+		keylget uarg FRL _frlName
+		set _frlRec $_frlName
+
+                # FrioLoadData is an undocumented function, its result
+                # is a list of field definitions of fields defined
+                # in the FRL.
+		if [catch {FrioLoadData $_frlRec $_frlName} err] {
+	            # error handling
+		}
+		# Get the list of fields for master FRL
+		set _flist [FrioGetFieldList $_frlName]
+
+		set odbcHandleList [odbcInitialize $_dsn $_userId $_passWord]
+		lassign $odbcHandleList henv hdbc hstmt
+
+		set _lastDealFname ${HciConnName}.lastdeal
+		if [file exists $_lastDealFname] {
+			set fd [open $_lastDealFname r]
+			set _lastDeal [gets $fd]
+			close $fd
+			if ![ctype digit $_lastDeal] {set _lastDeal 0}
+		} else {
+			set _lastDeal 0
+		}
+
+		return ""
+	}
+
+	time {
+	       set cmd "SELECT * from $_tableName WHERE $_idField > $_lastDeal \
+                         ORDER BY $_idField"
+            
+	       set rc [selectData $odbcHandleList $cmd]
+	       if [odbcResultIsFailure $rc] { 
+                  # error handling
+                  return ""
+               }
+
+               # rc is not an err code, so it is the result of the select
+	       foreach row $rc {
+	           set gh [grmcreate frl $_frlName]
+
+                   # grmstore the columns into fields
+	           set idx 0
+	           foreach col $row {
+		        set field [lindex $_flist $idx]
+                        incr idx
+	                grmstore $gh $field c $col
+                   }
+                 
+                   # get new value of _lastDeal, store in file
+                   set dhList [grmfetch $gh $_idField]
+                   set _lastDeal ""
+	           foreach dh $dhList {
+		         append _lastDeal [datget $dh VALUE]
+		         datdestroy $dh
+	           }                
+		   set fd [open $_lastDealFname w]
+		   puts $fd $_lastDeal
+		   close $fd
+	
+                   set mh [grmencode $gh]
+                   lappend dispList "CONTINUE $mh"
+
+                   grmdestroy $gh 
+		}
+                # end foreach row
+	}
+    }
+    # end switch
+
+return $dispList
+}
+</PRE>
+
+
+------------------->
+
+<p>
+Copyright 1998,2001 Health-Comm GmbH
+</BODY>
+</HTML>

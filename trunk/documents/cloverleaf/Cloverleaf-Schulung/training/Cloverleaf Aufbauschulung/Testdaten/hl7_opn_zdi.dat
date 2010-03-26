@@ -1,0 +1,77 @@
+MSH|^~\&|ZIS|1^CLASS1 Ziekenhuis|||19960514114316.0000+0100||ADT^A01|19960514114316.0000|P|2.2|||AL|NE
+EVN|A01|19960105152800.0000+0100|19960514114316.0000+0100
+PID||640215HO.02|5||Kamminga^Karin^K.^^""||19640215|F|||Vallaat^18^TOLBERT^^""^""^^P||""|""||""|||||||""|""
+ZPI||N|""|Hoeben^^^^""|""|9013^Olthof^^J.U.R.^^de||||O^NEG
+PV1||I|1n^1^""^011|S|||100^Jagerman - deKorte^^A.S.^^""^dr|9013^Olthof^^J.U.R.^^de^dr||9||||P|||100^Jagerman - deKorte^^A.S.^^""^dr|D|15|P|1|||||||||||||||H|""|||||||19960105152800.0000+0100|19960106152800.0000+0100
+PV2|||""^""^^""
+ZPV|||||3w^""^""^011
+ZDI|100^Jagerman - deKorte^^A.S.^^""^dr|045630~997108~756024|877
+MSH|^~\&|ZIS|1^CLASS1 Ziekenhuis|||19960514114418.0000+0100||ADT^A01|19960514114418.0000|P|2.2|||AL|NE
+EVN|A01|19960301121300.0000+0100|19960514114418.0000+0100
+PID||""|10||Vries^Danny^D.^^de||19951202|M|||Slotlaan^13^RODEN^^9301TH^""^^P||""|""||""|||||||""|""
+ZPI||N|""|""|""|""||||O^NEG
+PV1||I|3w^301^""^01|S|||100^Jagerman - deKorte^^A.S.^^""^dr|""||9||||H|||100^Jagerman - deKorte^^A.S.^^""^dr|L|27|P|3|||||||||||||||H|""|||||||19960301121300.0000+0100|19960310164000.0000+0100
+PV2|||""^""^^""
+ZPV|||||3w^301^""^01
+ZDI|100^Jagerman - deKorte^^A.S.^^""^dr|365768~045630|942
+MSH|^~\&|ZIS|1^CLASS1 Ziekenhuis|||19960514114508.0000+0100||ADT^A01|19960514114508.0000|P|2.2|||AL|NE
+EVN|A01|19960102100000.0000+0100|19960514114508.0000+0100
+PID||""|12||Vries^Marinus^M.^^de||19580215|M|||Hoogeveenseweg^38^MEPPEL^^7943KA^""^^P~""^""^Gasseltenijerveen^^""^""^^C||""|""||""|||||||""|""
+ZPI||N|""|""|""|""||||A^NEG
+NK1|1|J.Martens|C|""^""^Gasseltenijerveen^^""^""|""|""||19960320|""
+PV1||I|3w^301^""^01|r|||201^Internist^^K.^^""^""|""||""||||H|||201^Internist^^K.^^""^""|L|10|P|3|||||||||||||||H|""|||||||19960102100000.0000+0100|19960318100000.0000+0100
+PV2|||""^""^^""
+ZPV|||||3w^301^""^01
+ZDI|201^Internist^^K.^^""^""|045630|877
+IN1|1||anker|hetanker|Sylviuslaan^2^GRONINGEN^^9728NS^""|dhr.bootsman|""|||||19900101|""|||||||||||||||||||||||123456789
+IN1|2||rzg|Reg. ziekenfondsGron.|Schweitzerlaan^4^GRONINGEN^^9728NP^""|Dhr. K.Ferweda|0503434545CW|||||19960101|""|||||||||||||||||||||||""
+MSH|^~\&|ZIS|1^CLASS1 Ziekenhuis|||19960514114540.0000+0100||ADT^A01|19960514114540.0000|P|2.2|||AL|NE
+EVN|A01|19960103210000.0000+0100|19960514114540.0000+0100
+PID||sofinr|3||Sissing^Joanna^J.^^""||19580621|F|||VanIddekingeweg^163^GRONINGEN^^9721CE^""^^P||""|""||""|||||||Idaarderadeal|""
+ZPI||N|Idaarderadeal|Watts^^^^""|""|E002^Achterveld^^P.^^""^""||||AB^POS
+NK1|1|verpleeghuisneerwolde|M|HenriDunantlaan^2^GRONINGEN^^9728HD^""|""|""||19951201|19951203
+PV1||I|3w^""^""^011|r|||100^Jagerman - deKorte^^A.S.^^""^dr|9001^Aalbers^^J.^^""^Dr.||9||||H|||100^Jagerman - deKorte^^A.S.^^""^dr|D|13|P|3|||||||||||||||H|""|||||||19960103210000.0000+0100|19960110080000.0000+0100
+PV2|||""^""^^""
+ZPV|||||3w^""^""^011
+ZDI|100^Jagerman - deKorte^^A.S.^^""^dr|677844~123999~045630|944
+IN1|1||rzg|Reg. ziekenfondsGron.|Schweitzerlaan^4^GRONINGEN^^9728NP^""|Dhr. K.Ferweda|0503434545CW|||||19951201|19960211|||||||||||||||||||||||1234-567-89
+IN1|2||anker|hetanker|Sylviuslaan^2^GRONINGEN^^9728NS^""|dhr.bootsman|""|||||19960212|""|||||||||||||||||||||||1234-5678-090
+MSH|^~\&|ZIS|1^CLASS1 Ziekenhuis|||19960514114742.0000+0100||ADT^A01|19960514114742.0000|P|2.2|||AL|NE
+EVN|A01|19960213140000.0000+0100|19960514114742.0000+0100
+PID||sofinr|3||Sissing^Joanna^J.^^""||19580621|F|||VanIddekingeweg^163^GRONINGEN^^9721CE^""^^P||""|""||""|||||||Idaarderadeal|""
+ZPI||N|Idaarderadeal|Watts^^^^""|""|E002^Achterveld^^P.^^""^""||||O^
+NK1|1|verpleeghuisneerwolde|M|HenriDunantlaan^2^GRONINGEN^^9728HD^""|""|""||19951201|19951203
+PV1||I|3w^""^""^011|r|||201^Internist^^K.^^""^""|E002^Achterveld^^P.^^""^""||""||||H|||201^Internist^^K.^^""^""|D|18|P|3|||||||||||||||H|""|||||||19960213140000.0000+0100|19960214140000.0000+0100
+PV2|||""^onderzoek^^""
+ZPV|||||3w^""^""^011
+ZDI|201^Internist^^K.^^""^""|045630|102
+IN1|1||rzg|Reg. ziekenfondsGron.|Schweitzerlaan^4^GRONINGEN^^9728NP^""|Dhr. K.Ferweda|0503434545CW|||||19951201|19960211|||||||||||||||||||||||1234-567-89
+IN1|2||anker|hetanker|Sylviuslaan^2^GRONINGEN^^9728NS^""|dhr.bootsman|""|||||19960212|""|||||||||||||||||||||||1234-5678-090
+MSH|^~\&|ZIS|1^CLASS1 Ziekenhuis|||19960514114829.0000+0100||ADT^A01|19960514114829.0000|P|2.2|||AL|NE
+EVN|A01|19960225100000.0000+0100|19960514114829.0000+0100
+PID||sofinr|3||Sissing^Joanna^J.^^""||19580621|F|||VanIddekingeweg^163^GRONINGEN^^9721CE^""^^P||""|""||""|||||||Idaarderadeal|""
+ZPI||N|Idaarderadeal|Watts^^^^""|""|E002^Achterveld^^P.^^""^""||||^
+NK1|1|verpleeghuisneerwolde|M|HenriDunantlaan^2^GRONINGEN^^9728HD^""|""|""||19951201|19951203
+PV1||I|3w^303^1^011|r|||201^Internist^^K.^^""^""|E002^Achterveld^^P.^^""^""||""||||H|||201^Internist^^K.^^""^""|L|24|P|1|||||||||||||||H|""|||||||19960225100000.0000+0100|19960301140000.0000+0100
+PV2|||""^her-test^^""
+ZPV|||||1n^2^1^011
+ZDI|201^Internist^^K.^^""^""|045630|102
+IN1|1||rzg|Reg.ziekenfonds Gron.|Schweitzerlaan^4^GRONINGEN^^9728NP^""|Dhr.K. Ferweda|0503434545CW|||||19951201|19960211|||||||||||||||||||||||1234-567-89
+IN1|2||anker|hetanker|Sylviuslaan^2^GRONINGEN^^9728NS^""|dhr.bootsman|""|||||19960212|""|||||||||||||||||||||||1234-5678-090
+MSH|^~\&|ZIS|1^CLASS1 Ziekenhuis|||19960514115101.0000+0100||ADT^A01|19960514115101.0000|P|2.2|||AL|NE
+EVN|A01|19960103150500.0000+0100|19960514115101.0000+0100
+PID||""|21||Weg^Margriet^M.^^""||19670214|F|||Moeskersgang^9^GRONINGEN^^9711CJ^""^^P||""|""||""|||||||""|""
+ZPI||N|""|""|""|9001^Aalbers^^J.^^""^Dr.||||O^POS
+PV1||I|1n^2^1^011|r|||100^Jagerman - deKorte^^A.S.^^""^dr|9001^Aalbers^^J.^^""^Dr.||9||||H|||100^Jagerman - deKorte^^A.S.^^""^dr|L|14|P|3|||||||||||||||H|""|||||||19960103150500.0000+0100|19960108140000.0000+0100
+PV2|||""^""^^""
+ZPV|||||1n^2^1^011
+ZDI|100^Jagerman - deKorte^^A.S.^^""^dr|045630|400
+MSH|^~\&|ZIS|1^CLASS1 Ziekenhuis|||19960514115143.0000+0100||ADT^A01|19960514115143.0000|P|2.2|||AL|NE
+EVN|A01|19960108141500.0000+0100|19960514115143.0000+0100
+PID||""|21||Weg^Margriet^M.^^""||19670214|F|||Moeskersgang^9^GRONINGEN^^9711CJ^""^^P||""|""||""|||||||""|""
+ZPI||N|""|""|""|9001^Aalbers^^J.^^""^Dr.||||B^POS
+PV1||I|1n^2^1^011|r|||100^Jagerman - deKorte^^A.S.^^""^dr|9001^Aalbers^^J.^^""^Dr.||9||||H|||100^Jagerman - deKorte^^A.S.^^""^dr|D|17|P|3|||||||||||||||H|""|||||||19960108141500.0000+0100|19960109141500.0000+0100
+PV2|||""^""^^""
+ZPV|||||1n^2^1^011
+ZDI|100^Jagerman - deKorte^^A.S.^^""^dr|045630|
+

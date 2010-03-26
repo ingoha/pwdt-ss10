@@ -1,0 +1,258 @@
+# record layout: deal_oe
+#
+prologue
+    who:	hci
+    date:	Sat Jul 04 10:31:36  1998
+    version:	3.0
+    type:	frl
+end_prologue
+
+#
+# Include Files
+#
+
+
+#
+# Mask declarations
+#
+
+
+#
+# Field declarations
+#
+
+{NAME MsgType} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 6 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 6 }
+}}
+{NAME Valuedate} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE dt }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 8 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 8 }
+}}
+{NAME DealStatusFlag} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 1 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 1 }
+}}
+{NAME DealDetails} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 31 }
+	} {
+	    { DATATYPE ch }
+	    { FILL {} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX , }
+	    { WIDTH 15 }
+	} {
+	    { DATATYPE ch }
+	    { FILL {} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX , }
+	    { WIDTH 15 }
+	} {
+	    { DATATYPE ch }
+	    { FILL {} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX , }
+	    { WIDTH 15 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 31 }
+}}
+{NAME OurDealer} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 15 }
+	} {
+	    { DATATYPE ch }
+	    { FILL {} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX , }
+	    { WIDTH 10 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 15 }
+}}
+{NAME OurPhoneNbr} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 15 }
+	} {
+	    { DATATYPE ch }
+	    { FILL {} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX , }
+	    { WIDTH 10 }
+	} {
+	    { DATATYPE ch }
+	    { FILL {} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX , }
+	    { WIDTH 10 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 15 }
+}}
+{NAME CptyDealer} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 15 }
+	} {
+	    { DATATYPE ch }
+	    { FILL {} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX , }
+	    { WIDTH 10 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 15 }
+}}
+{NAME CptyPhoneNbr} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 15 }
+	} {
+	    { DATATYPE ch }
+	    { FILL {} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX , }
+	    { WIDTH 10 }
+	} {
+	    { DATATYPE ch }
+	    { FILL {} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX , }
+	    { WIDTH 10 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 15 }
+}}
+{NAME MaturityDate} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE dt }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 8 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 8 }
+}}
+

@@ -1,0 +1,27 @@
+# Xlate Spec: labadt
+#
+prologue
+    who:	HCI Network User
+    date:	Fri Oct 01 11:14:08 W. Europe Daylight Time 1999
+    version:	4.0
+    type:	xlt
+    xlt_infile:	fr hisadt.frl
+    xlt_outfile:	fr labadt.frl
+end_prologue
+
+{ { OP COPY }
+    { ERR 0 }
+    { IN TransactionCode }
+    { OUT TranCode }
+}
+{ { OP COPY }
+    { ERR 0 }
+    { IN {{PatientName.[0]} {PatientName.[1]}} }
+    { OUT PatientName }
+    { COPYSEP {, } }
+}
+{ { OP COPY }
+    { ERR 0 }
+    { IN {{NurseStation.[0]}} }
+    { OUT PatientFloor }
+}
