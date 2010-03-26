@@ -1,0 +1,189 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 80: Programmable Driver Language (PDL)</h1>
+
+
+
+
+<P>
+The Integrator supports a number of standard protocols at the session-level.
+Because there are more 'standard' protocols out there than anyone can imagine,
+the Programmable Driver Language (PDL) has been included in the Integrator.
+This in order to define session level protocols other than
+ the predefined protocols available via the Network Configurator.
+PDL has been added because of the following reasons:
+<UL>
+<LI>There are a huge number of similar (TCP/IP or RS232 based) protocol definitions;
+<LI>Previously, every connection required a different driver, 
+    which caused additional work in implementation.
+</UL>
+<P>
+The PDL language is fast and flexible. Because a lot of protocols are similar,
+a lot of PDL code can be reused.
+It is relatively easy to write a driver (i.e., doable by a knowledgable
+customer). Tcl can be used within a PDL-driver for arbitrary control. 
+<p>
+The PDL language itself consists of a mixture of TCL and a number of predefined 'macros'.
+PDL drivers are based on a &quot;generic&quot;
+driver core that knows how to read and write bytes over a file
+descriptor/socket. PDL is able to handle any
+byte stream protocol (i.e. PDL drivers are always async in nature, based on either
+TCP/IP or RS 232).
+Message processing is accomplished by &quot;describing&quot; a
+message structure and Tcl procedures to manage the message flow.
+<p>
+The behaviour of a protocol driver with regard to replies, 
+whether received by one of the standard protocol drivers or by a PDL,
+can be changed by using the Network Configurator (Properties of a protocol thread). 
+By selecting the await replies
+option, the engine will wait for a reply message before sending the next outbound message.
+(See <a href="m60.htm">Module 60: Reply messages</a>). 
+The Outbound Retries parameter is only useful if the PDL has been customized in such a way that
+resending is left to the engine and isn't done by the PDL itself. 
+The retries parameter is most often used in combination with an acknak style pdl. 
+In the event you receive a nak on an outbound message, the engine will resend the 
+message, until either it receives an ack, or until the retry limit has been reached.
+<P>
+PDL allows you to write protocol drivers that deal with protocols that have one of
+the following characteristics which can somehow not be dealt with by one of the standard 
+protocol drivers:
+<UL>
+<LI>Message encapsulation;
+<LI>Length-encoding and calculation;
+<LI>Checksum calculation;
+<LI>ACK/NAK, resending;
+<LI>Handshaking/flow-control.
+</UL>
+
+<h2>Phrase Definitions</h2>
+
+A <em> phrase definition</em> is the description of a message as it is transported over the
+transportlayer, including delimiters, length-encoded fields and checksums. A phrase
+is the unit of transfer at the operating system device level.
+PDLs contain at least one phrase definition.
+<P>
+<center><img src="images/phrase.gif"><BR>
+Figure 80.1 Message Phrase & engine message 
+</center>
+<p>
+Figure 80.1 shows the message as it known within the engine (the <em>engine message</em>)
+within the rectangle that represents a protocol thread in the Integrator, and the message
+as it is sent an external system (the <em>message phrase</em>).
+Note the difference between these two primary message objects:
+<UL>
+<LI>Message Phrase <br>
+    A definition of that which is actually ('physically') transmitted, including
+    an <em>engine message</em> protocol level delimiter characters and checksums;
+<LI>Engine Message <br>
+    A definition of that which is communicated between the protocol driver
+    and the engine and vice versa. An engine message is mostly the equivalent
+    of a series of fields/subcomponents defined in the message phrase.
+</UL>
+The message phrase (OSI session level) consists of the engine message (OSI presentation level)
+encapsulated in protocol-dependent delimiter characters and/or checksums.
+A phrase definition describes the message layout and its structure. 
+This includes required delimiter characters (such as &lt;stx&gt;
+or &lt;etx&gt;), data fields (both fixed length and variable length)
+and special fields (checksums, length-encoding).
+
+
+<P>
+A typical phrase example, in which the message is delimited by special characters
+and a checksum is to be calculated over the data part (i.e. engine message) of the
+message phrase:
+
+<PRE>define phrase basic-msg;
+  &lt;stx>;
+  phrase-check { method: xor, store-in: bcc } =
+    begin field data = variable-array ( not(&lt;etb>));
+    end;
+  &lt;etb>;
+  field bcc = fixed-array (3, digit );
+  &lt;etx>;
+end phrase;
+</PRE>
+Note that in this case the 'field data' contains the <em>engine message</em>, encapsulated
+in the <em>basic-msg message phrase</em>.
+<p>
+For an in depth discussion of phrase definition and phrase examples, see
+<a href="m81.htm">PDL: Phrase definition</a>.
+
+<h2>Styled PDL vs. Customized PDL</h2>
+
+Two PDL categories are supported:
+<UL><LI>style
+<LI>customized
+</UL>
+
+<P>
+<h2>Styles</h2>
+
+Many protocols are similar in operation, and differ only in the delimiter
+characters used to encapsulate the engine message. 
+Certain types of PDLs tend to be reused time and time again
+with just minor differences.
+To simplify the handling
+of these common cases, Integrator includes built-in PDL <em>styles</em> which
+implement most of the definitions and Tcl code for the driver. To use a <em>style</em>
+one just defines those elements which are unique to the protocol in question.
+If a PDL is 
+declared to be of a certain style, no TCL-procedures are required at all.
+<p>
+Currently two styles are supported: <em>basic</em> and <em>acknak</em>. 
+If one of these styles is used, it suffices to define a number of phrases
+for the messages that are to be used. In case of the basic style,
+one phrase has to be defined for the data message. When the acknak style
+is used, phrase definitions have to be created for the ack-message and nak-message
+as well.
+<p>
+For details, see <a href="m82.htm">PDL: Styles</a>.
+
+<h2>Customized PDLs</h2>
+
+If a styled PDL can't be used to take care of the exchange of messages, one has the
+option of writing a fully customized PDL. This PDL contains the phrase definitions
+for the appropriate messages as well as a great number of TCL procedures that 
+determine the behaviour of the driver when protocol events occur (e.g when a message
+is to be written, when something is received, when an error occurs).
+<p>
+For details, see <a href="m85.htm">PDL: Customized PDLs</a>.
+
+<P>
+<h2>The development cycle of PDL drivers</h2>
+<P>
+PDL files can be found in the $HCISITEDIR/pdls/*.pdl and $HCIROOT/pdls/*.pdl directories.
+PDL scripts are written using a normal
+editor (Notepad, vi). All pdl files are stored in files with the extension '.pdl'. 
+At runtime Integrator uses a 'compiled' version of these PDLs. Sourcefiles (*.pdl) can be compiled
+to object files (*.pdo) by using the <I>hcipdc</I> command. 
+<P>
+Before one can determine how to write a PDL for a given protocol, a series of
+decisions have to be made surrounding the handling of the event/response 
+scenarios of driver:
+<UL>
+<LI>Can the message(s) be described by a phrase ?
+<LI>Will the driver have to accept/send acknowledgements ?
+<LI>What happens if the (remote) device &quot;closes&quot; its connection ?
+<LI>Will the driver have to skip a message if &quot;nak&quot; retries is exceeded ?
+</UL>
+Only when these questions have been answered will one be able to determine whether a
+PDL style can be used or what (if any) existing PDL with a structure akin 
+to the required PDL can be used as a basis for further development.
+<P>
+Note that the standard Integrator hcitcptest tool can be used to test a PDL. 
+Initial testing is mostly done without the &quot;real&quot; device at hand. 
+Test with the &quot;real&quot; device if available.
+
+<p>
+Copyright 1998,2002
+</BODY>
+</HTML>

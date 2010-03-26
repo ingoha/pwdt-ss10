@@ -1,0 +1,41 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7>
+ Integrator - Level II Training </H1>
+
+<h1> Module 73: Lab: TrxId determination procedure (F) </h1>
+
+
+
+
+Deals entered in the order entry system have a Deal Status "P" (pending) or "V"
+(validated). 
+In Lab 51 you wrote an IB-TPS that KILLed all messages with Deal Status P in order
+to prevent the translation and delivery of these messages.
+This lab provides an alternative solution in the form of a TrxId determination procedure.
+
+
+<p>
+<b>1.</b> TrxId procedure <BR>
+Create a TrxId determination procedure that returns a TrxId consisting
+of the first 6 characters of the message and the value of the Deal Status Flag field.
+<br><b>1.1</b> Applying the TrxId procedure <BR>
+Use the TrxId procedure to determine the transaction Id of messages read by
+the deal entry system (DES). Route the SPOTEXV messages to the deal management system
+(DMS). Remove the <em>filterDealStatus</em> TPS procedure (created in Lab 51) from
+the IB TPS stack.<BR>
+Remove the static route to the archive system and route all message types
+other than SPOTEXV to the archive thread. Assume that at least one sample message of all
+possible message types is included in the file with test messages.<BR>
+Run the engine and check for any remaning "No Routes defined for TrxId 'XYZ'" errors.
+Add a route to the archive thread for these message types.
+
+<p>
+Copyright 1998 HIE Europe [40]
+</BODY>
+</HTML>

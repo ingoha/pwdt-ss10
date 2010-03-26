@@ -1,0 +1,30 @@
+prologue
+    who:	HCI Network User
+    date:	Wed Aug 04 11:18:48 W. Europe Daylight Time 1999
+    version:	4.0
+    type:	msg
+    hl7vers:	2.2
+end_prologue
+MSH
+EVN
+[ PID ]
+[ ZPI ]
+{ [ NK1 ] }
+PV1
+[ PV2 ]
+[ ZDI ]
+{ [ OBX ] }
+{ [ AL1 ] }
+{ [ DG1 ] }
+{ [ PR1 ] }
+{ [ GT1 ] }
+[
+   {
+      IN1
+      [ IN2 ]
+      [ IN3 ]
+   }
+]
+[ ACC ]
+[ UB1 ]
+[ UB2 ]

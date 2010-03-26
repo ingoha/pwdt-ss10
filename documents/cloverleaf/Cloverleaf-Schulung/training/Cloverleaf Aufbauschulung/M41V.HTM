@@ -1,0 +1,40 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 41: GRM & XPM, supporting procedures </h1>
+
+
+
+
+
+
+<PRE>
+file: gen_grm_procs.tcl
+
+###############################################################################
+# grmfetchStr : variation on grmfetch, returns a list of strings 
+#               instead of a list of datum handles.
+#
+proc grmfetchStr { grmId field } {
+   if [catch {set dhList [grmfetch $grmId ${field}]} err] {
+     error $err
+   }
+   set fieldvalue {}
+   foreach dh $dhList {
+     lappend fieldvalue [datget $dh VALUE]
+     datdestroy $dh
+   }   
+   return $fieldvalue
+}
+
+
+</PRE>

@@ -1,0 +1,89 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7>
+ Integrator - Level II Training </H1>
+
+<h1> Module 42: Lab: Xlt CALL, Xlt Post-Proc and xpm (F)</h1>
+
+
+
+
+<p>
+<b>1.</b> XLT Call Proc<BR>
+Within the translation of the Deal Entry System SPOTEX messages to the FOO
+Deal Management System E-messages the PurchaseFlag field isn't filled yet. <br>
+Create a Xlt CALL procedure <em>determinePurchaseFlag</em> that performs the following tasks:
+<UL>
+<LI>Fetch the value of the first ("Amount1") and third subfields ("Amount2")
+    of the DealDetails fields
+    (using the fieldname as defined in your FRL) ;<BR>
+    (Alternatively: retreive the values from the xlateInVals list) 
+<LI>Store 0 in the PurchaseFlag field if the first subfield ("Amount1")
+    is smaller than 0, otherwise store 1 in the PurchaseFlag field.< BR>
+<LI>If "Amount1" is positive, then "Amount2" has to be negative.
+    If "Amount2" is positive, then "Amount1" has to be negative. 
+    Generate an xpmerror if both values are either negative or positive.
+<LI>Destroy all superfluous handles.<BR>
+</UL>
+Add a CALL <em>determinePurchaseFlag</em> translation action to the existing translation specification; <BR>
+Test the translation specification (and the procedure) using the testing tool.<BR>
+<b>A much simpler solution is to use a IF/THEN/ELSE translation action. 
+For training purposes we want you to create a Tcl procedure. </b>
+
+<p>
+<b>2.</b> XLT Call Proc<BR>
+Within the translation of the Deal Entry System SPOTEX messages to the FOO
+Deal Management System E-messages the Exchange Rate field isn't (correctly/fully) filled yet. <br>
+Create a Xlt CALL procedure <em>determineExchangeRate</em> that performs the following tasks:
+<UL>
+<LI>Fetch the value of the first ("Amount1") and third subfields ("Amount2")
+    of the DealDetails fields
+    (using the fieldname as defined in your FRL) ;<BR>
+    (Alternatively: retreive the values from the xlateInVals list) 
+<LI>The exchange rate is defined as the absolute value of amount1 divided by amount2.
+    Tcl, while being an excellent scripting language when it comes to string handling,
+    has to be forced to divide these amounts as 'reals' in order for the result
+    of the division to be reliable. The following Tcl code snippet shows how
+    to turn the amounts into their 'real number equivalent':
+    <br>
+    if { [string first . $amount1] &lt; 0 } { append amount1 ".0" } <br>
+    if { [string first . $amount2] &lt; 0 } { append amount2 ".0" } <br>
+    set exchangeRate [expr { $amount1 / $amount2 }] 
+<LI>Store the exchange rate (>0!) in the appropriate field;
+<LI>Destroy all superfluous handles.<BR>
+</UL>
+Add a CALL <em>determineExchangeRate</em> translation action to the existing translation specification; <BR>
+Test the translation specification (and the procedure) using the testing tool.<BR>
+
+<!----------
+
+<p>
+<b>2.</b> XLT Call Proc <img src="images/java2.gif"><BR>
+Currently all HIS ADT_A01 messages are translated to JKA SFP messages. 
+If a patient was born after 1993, SFP messages should not be generated because
+the needs of these patients are seen to by a specialized dietician. <BR>
+Create a Xlt CALL procedure <em>ageFilter</em> that performs the following tasks:
+<UL>
+<LI>Fetch the value of the PID.Date of birth field (using its correct HL7-pathname) ;<BR>
+    (Alternatively: retreive the value from the xlateInVals list) 
+<LI>The ongoing translation is to be aborted if the date of birth of the patient is after 1993.
+    To retrieve the current year, use <b>fmtclock %Y [getclock]</b>.
+    Use the <em>xpmerror</em> procedure with severity curdetail to abort the translation.
+<LI>Destroy all superfluous handles.<BR>
+</UL>
+Add a CALL <em>ageFilter</em> translation action to the existing translation specification; <BR>
+Test the translation specification (and the procedure) using the testing tool.<BR>
+
+---------------------->
+
+<p>
+Copyright 1998,2000 HIE Europe [95]
+</BODY>
+</HTML>

@@ -1,0 +1,362 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </h1>
+
+<h1> Module 95: Protocol Driver Control</h1>
+
+
+
+
+
+The behaviour of a (non-UPoC) protocol driver is normally uniquely determined by its
+configuration in the Network Configurator. The behaviour of a standard
+protocol driver can be changed/monitored (depending on the whether it is an inbound or outbound connection) in 3 ways:
+<UL>
+<LI>By using a <a href="m95.htm#protostart">Protocol Startup/shutdown TPS</a>.
+<LI>By modifying/inspecting a message's metadata, i.e. its <a href="m95.htm#driverctl">DRIVERCTL metadata field</a> or the <a href="m60.htm#expect_reply">Module 60: expect_reply metadata FLAG</a>.
+<LI>Fileset/FTP's <a href="m95.htm#dirparse">directory parse/delete procedure</a>
+</UL>
+
+
+<a name="driverctl">
+<h2>Protocol Driver behaviour and Message Metadata</h2>
+
+The behaviour of a (non-UPoC) protocol driver is normally uniquely determined by its
+configuration in the Network Configurator. The behaviour of a standard
+protocol driver can be changed/monitored by manipulating the DRIVERCTL metadata associated with a message.
+A message's DRIVERCTL values apply only to that specific message. Changing the DRIVERCTL metadata does not
+affect inbound message flow or other outbound messsages.The DRIVERCTL metadata field is a keyed list. The number and type
+of keys within this list varies, depending on the protocol driver used.
+
+<p>
+In outbound connections, the DRIVERCTL metadata field contains configuration information (as configured in
+the Network Configurator). By changing this metadata the
+default configuration of the outbound protocol driver will be overridden. 
+In addition to the DRIVERCTL metadata field the behaviour of an outbound connection can be altered if the
+outbound thread has been configured to 'await replies'. In that case the protocol driver will wait for an inbound reply
+for each outbound data message. This default behaviour can be changed. See
+<a href="m60.htm#expect_reply">Module 60: expect_reply metadata FLAG</a> where this is covered in detail.
+
+<p>
+In inbound connections, DRIVERCTL may contain information related to the inbound transport protocol.
+
+
+<UL>
+<LI><a href="m95.htm#fileset">Module 95: Fileset Driver options</a>
+<LI><a href="m92.htm">Module 92: HTTP Driver</a>, <a href="m95.htm#http">Module 95: HTTP-Client DRIVERCTL</a>
+<LI><a href="m90.htm">Module 90: UPoC Driver</a>
+<LI><a href="m95.htm#tcp">Module 95: TCP/IP DRIVERCTL</a>
+</UL>
+
+
+<a name="fileset">
+
+<h2>1. The Fileset protocol drivers</h2>
+
+
+
+<h2>1.1 Outbound: Fileset/FTP protocol driver message metadata</h2>
+
+The list below is limited to a description of those
+metadata fields that affect <em>outbound</em> messages.
+<p>
+Key: FILESET.OBFILE <br>
+Purpose: Can be used to change the name of the file as it will be generated
+by the protocol driver upon delivery of the current message. If OBFILE contains a relative
+path, it is relative to OBDIR/FTPOBDIR. <br>
+Notes: Its value is of type string. <br>
+Example: (used in the Outbound TPS stack)<br>
+
+<PRE>set kl [msgmetaget $mh DRIVERCTL]
+keylset kl FILESET.OBFILE $newFileName
+msgmetaset $mh DRIVERCTL $kl
+</PRE>
+
+
+Key: FILESET.OBDIR <br>
+Purpose: Contains the name of the local destination directory. (mode=local-oldest or local-tps) 
+   If OBDIR is a relative path, it is relative to the process execution directory. <br>
+Notes: Its value is of type string. <br>
+Key: FILESET.FTPOBDIR <br>
+Purpose: Contains the name of the remote destination directory. (mode=FTP)<br>
+Notes: Its value is of type string. <br>
+
+Key: FILESET.OBAPPEND <br>
+Purpose: Set to 1 when the message is to be appended to the outbound file (if it exists).
+The file will be truncated and overwritten otherwise.<br>
+Notes: Its value is of type boolean (0 or 1). <br>
+Key: FILESET.FTPTYPE <br>
+Purpose: The type of data transferred. (mode=FTP) <br>
+Notes: Its value is of type string, either 'i' for binary data or 'a' for ascii. <br>
+Key: FILESET.OBSTYLE <br>
+Purpose: Determines the way in which the message will be written to the file. 
+The OBSTYLE value is particularly important when numerous messages are written to a file.<br>
+Notes: Its value is of type string, either 'nl', 'len10', 'single' or 'hl7'. <br>
+Key: FILESET.FTPCLOSE <br>
+Purpose: Set to 1 when the connection is to be closed once the messsage is written. (mode=FTP)<br>
+Notes: Its value is of type boolean (0 or 1). <br>
+
+<p>Example:<br>
+The destination system expects the messages to be stored in seperate files
+with filenames having the following layout: "OUTxxx.dat" where xxx is
+an ever increasing number. <br>
+The following procedure (to be used in the OB TPS Stack) changes the name
+of the outbound file. Note that the counter can be passed as an argument 
+if you prefer. It doesn't matter what file name you
+put in your protocol configuration since it will be changed here,
+but you should make sure that the append to file option is set.  Some
+FTP clients/servers won't work without this option set.
+
+
+<PRE>########################################################################
+# Outbound TPS
+# Contstructs a filename of type out99999.dat
+#
+proc numfile { args } {
+     keylget args MODE mode
+     set ctrfile "numfile.ctr"
+     # file is stored in the process directory (unless a path is specified)
+     switch -exact -- $mode {
+          start {
+               if {![file exists $ctrfile]} {
+                    CtrInitCounter $ctrfile file 1 99999
+                    echo Initializing $ctrfile
+               } 
+          }
+          run {
+               keylget args MSGID mh
+               # create filename based on counter
+               set filename ""
+               set ctrval [CtrCurrentValue $ctrfile ] 
+               CtrNextValue $ctrfile file
+               append filename "out" $ctrval ".dat"
+               # change driverctl metadata 
+               set dc [ msgmetaget $mh DRIVERCTL ]
+               keylset dc FILESET.OBFILE $filename
+               msgmetaset $mh DRIVERCTL $dc
+               return "{CONTINUE $mh}"
+          }
+          shutdown {
+          }
+          default {
+               echo Invalid mode $mode
+          }
+     }
+}
+</PRE>
+
+
+
+<a name="tcp">
+<h2>2. The TCP/IP (and TCP/IP PDL) protocol driver</h2>
+
+The TCP/IP protocol driver is used for standard TCP/IP connectivity. Support for DRIVERCTL metadata was added to the TCP/IP PDL driver in Integrator version 5.0.
+
+<h2>2.1 Outbound: TCP/IP protocol driver message metadata</h2>
+
+The list below is limited to a description of those
+metadata fields that affect <em>outbound</em> messages.
+The "use DRIVERCTL" option in the Network Configurator must be checked
+in order for these fields to be used by the protocol driver.
+
+<p>
+Key: CONNID (v5.0+)<br>
+Purpose: Contains the unique connection ID of the tcp/ip client. <br>
+Notes: This key is <b>required</b> for outbound messages to one of the clients connected
+to a Muli-Server TCP/IP Thread. If CONNID isn't used, or if it contains an invalid connection ID, then
+the message will be discarded by the protocol driver. A list of all valid connection IDs can be found in the global variable <b>client_list</b> which is continuoulsy updated by the protocol driver.<br>
+Key: TCP/IP.CLOSE <br>
+Purpose: If set to true, the protocol driver will break the tcp/ip connection
+after having delivered the current message. Mostly used in combination with
+TCP/IP.RECONNECT.<br>
+Notes: Its value is of type boolean (0 or 1).<br>
+Key: TCP/IP.RECONNECT (not supported by the TCP/IP PDL driver)<br>
+Purpose: If set to true, the protocol driver will attempt to reconnect
+after having delivered the current message.<br>
+Notes: Its value is of type boolean (0 or 1).<br>
+Key: TCP/IP.WRITEZERO (not supported by the TCP/IP PDL driver)<br>
+Purpose: If set to true, 0 length messages will be sent by the protocol driver.
+Normally, 0-length messages are not send by the protocol driver. 
+Mostly used in combination with TCP/IP.CLOSE.<br>
+Notes: Its value is of type boolean (0 or 1).<br>
+
+<p>
+If 'await replies' is used the value of the CONNID, CLIENTIP and CLIENTPORT DRIVERCTL metadata fields will be automatically copied from the outbound data message to the reply message. This ensures that a reply message is delivered to the correct client.
+
+<a name="tcp-ib">
+<h2>2.2 Inbound: TCP/IP protocol driver message metadata</h2>
+
+The list below is limited to a description of those
+metadata fields that affect <em>inbound</em> messages.
+The DRIVERCTL metadata will be filled by TCP/IP Server connections that are configured to be Multi-Server (v5.0+). 
+The "Save Client IP and Port to DRIVERCTL" option in the Network Configurator must be checked
+in order for these fields to be filed by the protocol driver.
+
+<p>
+Key: CONNID (v5.0+)<br>
+Purpose: Contains the unique connection ID of the tcp/ip client. A new connection ID is
+automatically assigned to each new connection.<br>
+Notes: The counter is maintained in the file $HCISITEDIR/exec/tcpconnid.ctr <br>
+Key: CLIENTIP (v5.0+)<br>
+Purpose: Contains the name or the IP address of the client. <br>
+Key: CLIENTPORT (v5.0+)<br>
+Purpose: Contains the remote port used by the client in this connection.
+<p>
+The &lt;threadname>.cli file in the 'process' directory contains the details of all
+currently open connections. An example of its contents:
+{8 berty.abc.com 1123}  {9 sirius.galaxy.org 2604}
+<p>
+If a connection by one of the clients is broken, an inbound 0-length message with the following metadata will
+be forwarded into the engine: {DRIVER tcpip} {CONTROL { close }}
+
+<a name="http">
+<h2>3. Outbound: The HTTP-Client Driver</h2>
+
+The DRIVERCTL metadata will only be used by the HTTP-Client driver if the 
+<a href="m92.htm">HTTP-Query TPS procedure</a> has implemented support for DRIVERCTL. 
+<p>
+
+Key: HTTP-CLIENT.URL <br>
+Purpose: Contains the URL of the resource. <br>
+Notes: Its value is of type string, reserved URI characters have to be escaped by %HH escape sequences. <br>
+Key: HTTP-CLIENT.METHOD <br>
+Purpose: Contains the method used when requesting the resource. Must be GET, PUT or POST.<br>
+Notes: Its value is of type string. <br>
+Key: HTTP-CLIENT.HEADERS <br>
+Purpose: Contains a keyed list consisting of header-labels (keys) and their values. The headers
+will be used in the header of the HTTP request.<br>
+Notes: Its value is a keyed list. <br>
+
+<p>
+
+<a name="dirparse">
+<h2>Directory parse/delete procs </h2>
+
+<!------ fileset_ibdirpars TPS and fileset_ib_del TPS procs ! -------->
+
+The Fileset/FTP protocol is a generic file based protocol. It can be used in one
+of 3 <b>modes</b>: FTP, local-oldest and local-tps.
+
+<p>If mode is FTP or local-tps the driver will use the IB Directory Parse TPS
+to select/filter the files to transfer to Integrator. The IB Delete TPS will
+be used to determine what files (once processed) are to be deleted from
+the inbound (local or remote) directory.
+
+
+<p>Example:<br>
+
+<PRE>######################################################################
+# Name:		gc_extractFTPfilename
+# Purpose:	Checks directory listing from ftp
+# UPoC type:	Directory parse TPS
+#
+# Returns: tps disposition list:
+#          CONTINUE file(s) to ftp
+#          KILL message - if we don't want the the file ftp'd
+#
+# Notes:   The engine will provide the results of the directory list
+#	   command in the protocol definition.  That command should be
+#	   "nlst <fn>" or "nlst -A <fn>".  The returned list
+#	   should be similar to "ls -l <fn>".  
+#	   The string contains a list of filenames which are ready to be transferred
+#	   the first file name is returned causing the engine to ftp 
+#	   that file. The tcl-proc needs to be added to the 'Directory parse TPS' 
+#          at the FILESET/FTP protocol screen.
+#
+proc gc_extractFTPfilename { args } {
+    keylget args MODE mode       
+    switch -exact -- $mode {
+        start { return "" }
+        run {
+            keylget args MSGID mh
+	    set msg [msgget $mh]
+            # msg contains a space separated list of available filenames 
+            # First make it a proper tcl list by replacing any crlf or newlines by a space
+            # Replace cr lf by space
+            regsub -all \r $msg " " msg
+            regsub -all \n $msg " " msg 
+            # replace occurences of multiple spaces by 1 space
+            while [regsub -all "  " $msg " " msg] { #do_nothing }
+ 
+            # Get the first file name and return it
+            set fn [lindex $inmsg 0]                       
+            msgset $mh $fn
+            set dispList "CONTINUE $mh"
+
+            return $dispList
+        }
+
+        shutdown {
+        }
+
+        default {
+	    error "Unknown mode '$mode' in gc_extractFTPfilename"
+        }
+    }
+}
+</PRE>
+
+<a name="protostart">
+<h2>Startup TPS procedure</h2>
+
+<h2>The Protocol Startup UPoC </h2>
+
+The Protocol Startup is the first UPoC applied to an inbound data message
+delivered from a protocol driver to the engine, and controls what happens
+when the first mesage is sent to or received from a connection. This UPoC customizes
+the startup actions of a protocol driver without changing the driver code itself.
+Messages will be processed by this UPoC until the <b>engpswthrow</b> switch is thrown.
+It won't be called again until the thread restarts.
+
+<p>
+The first example creates a MVS TCP/IP driver start-up message and
+           pass it to the engine driver.  The message data content will
+           be the name of the MVS program to start.  The message metadata
+           FLAG expect_reply must be set to TRUE so the engine will wait
+           for an ack after the start message is sent. 
+
+<PRE>
+switch -exact -- $mode {
+    start {
+          keylget args ARGS.MVS_PROGRAM mvsProgram
+          puts "$date: $procName: $HciConnName: Starting program <$mvsProgram>\n"
+          set mvsStartMh [msgcreate -type data "$mvsProgram"]
+          msgmetaset $mvsStartMh FLAGS { {expect_reply TRUE} }
+          lappend dispList "PROTO $mvsStartMh"
+
+          engStartupSwitchThrow
+        }
+</PRE>
+
+
+<p>
+In the second example, the protocol calls for a synchronization by means of a sequence number.  The sending system sends
+the starting sequence number to Integrator as its first message, at the time of start up.  
+The next message will be data with
+that sequence number.  Since the start mode does not receive a message handle the actual code is put into the run section of
+the protocol start-up.  The run section shouldn't be excuted after the initial message, so engpswthrow is triggered after 
+the messages sequence number has been extracted from the initial message and stored into a file or a global variable.
+
+
+<PRE>
+       run {
+           keylget args MSGID mh
+           global sequence
+           set sequence [msgget $mh]
+           lappend dispList "KILL $mh"
+
+           engpswthrow
+       }
+</PRE>
+
+
+<p>
+Copyright 1998,2002 Health-Comm GmbH
+</BODY>
+</HTML>

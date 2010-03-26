@@ -1,0 +1,108 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 73: TrxId determination Procedure, Examples </h1>
+
+
+
+
+
+<PRE>file: gen_EDI_procs.tcl
+######################################################################
+# Name:		gc_determineEDITrxId
+# Purpose:	Determines the TrxId of an EDI message. 3.2.0P returns an
+#               error when TrxId determination is based on EDIFACT/Variant.
+#               Use this proc from the FRL-TrxId determination option.
+# UPoC type:	trxid
+# Args:		mh	= message handle
+# Returns:	The message's transaction ID
+#
+# Notes:
+#	The message is both modify- and destroy-locked -- attempts to modify
+#	or destroy it will error out.
+#
+# KEYWORDS: (gc_determineEDITrxId-TrxId determination proc) TrxId EDI  
+
+proc gc_determineEDITrxId { mh } {
+ set msg [msgget $mh]
+
+ set FirstSeg [crange $msg 0 2]
+ if {[cequal $FirstSeg "UNA"]} {
+     set FirstSeg [crange $msg 0 20]
+ } else {
+     echo gc_determineEDITrxId: UNA seg not found. Assuming default separators.
+     set FirstSeg "UNA+:+.? '"       ;# default UNA seg
+ }
+ set CESeparator [crange $FirstSeg 3 3]
+ set DESeparator [crange $FirstSeg 4 4]
+ set SBSeparator [crange $FirstSeg 9 9]
+
+ # gc_getEDIMsgPart is een procedure in gen_EDI_procs.tcl...
+ set trxId [gc_getEDIMsgPart $msg UNH 2 0 $SBSeparator $CESeparator $DESeparator]
+
+ return $trxId				;# return it
+}
+</PRE>
+
+<PRE>
+File: gen_HL7_procs.tcl
+###########################################################
+# Name:         gc_detmodifyHL7trxId
+# Purpose:      Determines the TrxId of HL7 messages, 
+#               changes the TrxId "ADR_A19" to "ADR_A19N" 
+#               if MSA.result != AA
+# UPoC type:    trxid
+# Args:         mh   = message handle
+# Returns:      The message's transaction ID
+#
+# Notes:
+#       The message is both modify- and destroy-locked 
+#       -- attempts to modify or destroy it will error out.
+#
+
+proc gc_detmodifyHL7trxId { mh } {
+
+     # Determines the HL7 TrxId.
+     # Special behaviour if the TrxId == ADR_A19:
+     #    The HL7 field that determines the resulting TrxId 
+     #    is the acknowledgement code in the MSA segment 
+     #    0(0).MSA(0).00018(0)
+     #    If this field = "AA" the trxId is ADR_A19 
+     #                         else it is set to ADR_A19N
+
+     #get the message from the ID
+     set msg [msgget $mh]
+
+     set msh [gc_getHL7Segment $msg MSH]
+     set fs [csubstr $msh 3 1]
+     set ss [csubstr $msh 4 1]
+
+     set mtype [gc_getHL7Field $msh 8 $fs  ]
+     if { [clength $mtype] > 3 } {
+        # Hmm. TrxId contains an event code as well. 
+        # Replace ^ by _ char.
+        set mtype "[csubstr $mtype 0 3]_[csubstr $mtype 4 3]"
+     }
+
+     if {![cequal $mtype "ADR_A19"]} {
+        return $mtype
+     } else {
+        # if there is no PID segment in the message, the 
+        # patient could not be found.
+        if [regexp "\rPID|" $msg] {
+             return  $mtype
+        } else {
+             return "ADR_A19N"
+        }
+     }
+
+}
+</PRE>

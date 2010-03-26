@@ -1,0 +1,138 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 110: Advanced Alert Actions</h1>
+
+
+
+
+
+With the <em>Alert Configurator</em>, alarms, or monitor points can be defined that trigger
+alerts when certain conditions occur during Integrator operation.
+Each <em>Action Detail Definition</em> (i.e. the definition of the triggering conditions) 
+can be associated with one or more alert actions.
+An <em>Alert Action</em> specifies what action to take when the alert is triggered.
+The options are:
+<UL>
+<LI> <b>Notify</b> <br>
+     Displays a message on the console/Integrator client.
+<LI> <b>Exec</b> <br>
+     Executes a shell command.
+<LI> <b>TCL</b> <br>
+     Executes Tcl code.
+<LI> <b>Remote (Callback)</b> <br>
+     Connects to a TCP/IP server application and sends the alert number and message.
+</UL>
+
+<h2> Notify </h2>
+
+The Notify alert option displays a message to notify the operator that the alert
+has been triggered. The Notify alert action is mostly used for low-priority alerts.
+
+<p>
+Example:
+
+<PRE>notify {}</PRE>
+
+When the alert is triggered the alert message will be sent to the console/Integrator client.
+
+<h2> Exec </h2>
+
+The Exec alert option executes a specified shell command when the alert is triggered. 
+This option is mostly used to execute a shell script that notifies the operator and/or
+attempts to resolve the problem. 
+A shell script can be used to notify an operator in a manner other than a notification
+message, e.g. by beeper, 
+Short Message Service (SMS/GSM), e-mail or Fax. 
+
+<p>
+In some circumstances an attempt can be made to correct "expected problems". One
+of our customers had a TCP/IP connection that is somehow terminated
+by a router about once an hour. The alert triggers a script that restarts
+the thread. Once the thread is started it will automatically establish
+a new TCP/IP connection. The script uses the <em>hcicmd</em> command line
+tool (see the Reference Guide, "Engine Commands" for details) to restart the thread.
+
+<p>
+Examples:
+
+<PRE>exec diskCleanup
+exec {mail -s '%A' root &lt; /dev/null}
+</PRE>
+
+
+<h2> TCL </h2>
+
+The Tcl alert option exucuted the specified Tcl code when the alert is triggered.
+This option is mostly used to execute a shell script that notifies the operator and/or
+attempts to resolve the problem. The name of a Tcl script has to be specified, along
+with parameters that are to be passed to the Tcl script. Parameters can either be constants,
+%A (which denotes the alert message) or %F (which denotes the name of the file used by
+Integrator to store the error message).
+<p>
+Alert Tcl procedures are executed by the hcimonitor daemon. Run-time information
+about the engine can be accessed by using the <a href="m100.htm">
+MSI Tcl Extensions (Module 100)</a> or by using some of the commandline tools,
+such as hciprocstatus and hciconnstatus.
+<p>
+Example: The most common type of alert Tcl procedure is configured as follows:
+
+<PRE>tcl {myproc "%A"}
+</PRE>
+
+The alert Tcl procedure has the following layout:
+
+
+<PRE>#####################################################################
+# Name:         myproc
+# Purpose:      Tcl from alert example
+# UPoC type:    other
+# Args:         The alert message string
+# Notes:        file alerts.tcl
+#
+proc myproc { {alert_message ""} } {
+
+  # attempt to resolve problem, log message, notify operator, etc..
+
+}
+</PRE>
+
+
+If an alert is associated with multiple resources, the alert message (%A) does not
+specify what resource triggered the alert. Example:
+<PRE>"The engine thread status of at least 1 of (conn_0, lab) is down"</PRE>
+The Tcl script is able to pinpoint the exact resource based on the alert message and
+the MSI extensions/the commandline utilities.
+<p>
+See also the <a href="m110v.htm"> Tcl Alert Option, example </a>.
+
+<h2> Remote (Callback) </h2>
+
+The Remote alert option connects to a TCP/IP server application and sends the alert
+number and message when the alert is triggered. You must specify the socket port number and host name. 
+This alert option can be used to notify a (remote) monitoring application that
+may trigger an applicable notification mechanism.
+<p>
+Example:
+
+<PRE>call {8005 castor}</PRE>
+
+
+The call alert option can be easily tested by using <em>hcitcptest</em> as a TCP/IP host:
+run <em>hcitcptest -t raw -p 8010</em>
+and combine this with a
+<em>call {8010 localhost}</em> alert detail definition.
+
+<p>
+Copyright 2001 Health-Comm GmbH
+</BODY>
+</HTML>

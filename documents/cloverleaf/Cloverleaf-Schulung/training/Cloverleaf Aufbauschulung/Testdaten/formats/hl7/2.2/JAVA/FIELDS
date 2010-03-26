@@ -1,0 +1,20 @@
+prologue
+    who:	HCI Network User
+    date:	Wed Aug 04 11:06:16 W. Europe Daylight Time 1999
+    version:	4.0
+    type:	fld
+    hl7vers:	2.2
+end_prologue
+{ITEM 91001} {NAME {Deceased Indicator}} {LEN 4} {TYPE SI}
+{ITEM 91002} {NAME {Place of Birth}} {LEN 25} {TYPE ST}
+{ITEM 91003} {NAME {Name of Spouse}} {LEN 48} {TYPE PN}
+{ITEM 91004} {NAME {Referring Patient ID}} {LEN 16} {TYPE CK}
+{ITEM 91005} {NAME {General Practicioner}} {LEN 60} {TYPE PN}
+{ITEM 91006} {NAME {Parent Initials}} {LEN 10} {TYPE ST}
+{ITEM 91007} {NAME {Girobank Account Number}} {LEN 7} {TYPE NM}
+{ITEM 91008} {NAME {Bank Account Number}} {LEN 9} {TYPE NM}
+{ITEM 91009} {NAME {Blood Type}} {LEN 10} {TYPE ST}
+{ITEM 91010} {NAME {Time of Death}} {LEN 1} {TYPE DT}
+{ITEM 95001} {NAME Dietician} {LEN 60} {TYPE CN}
+{ITEM 95002} {NAME Foodcode} {LEN 6} {TYPE ST}
+{ITEM 95003} {NAME LiquidFoodCode} {LEN 6} {TYPE ST}

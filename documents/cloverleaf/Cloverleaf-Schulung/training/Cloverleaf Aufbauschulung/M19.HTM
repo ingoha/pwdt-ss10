@@ -1,0 +1,334 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 19: GNU Database Manager (GDBM) Tcl Extensions </h1>
+
+
+
+
+
+<p>
+Gdbm is a Tcl extension based on the API of the generic database manager provided by
+the Unix system libraries. These extensions are also available on the NT platform.
+The gdbm extension allows for fast access to
+an indexed database. Databases created using the gdbm extension are accessable
+from multiple, concurrent, threads and processes.
+<p>
+Gdbm supports tables accessable via a single key. A key is associated with one value.
+This limited functionality van be enhanced by structuring the values as
+lists or keyed lists. 
+<p>
+Use the info command option in the interpreter to get a full list of available
+gdbm functions: <BR>
+hcitcl>info command gdbm* <BR>
+gdbm_close gdbm_delete gdbm_fetch gdbm_firstkey gdbm_insert gdbm_list gdbm_nextkey gdbm_open gdbm_reorganize gdbm_replace gdbm_store
+<p>
+The list below contains a description and a usage of the gdbm functions.
+The flag that preceeds a procedure name (**,* or --) indicates
+the frequency of use of the procedure (frequently, regularly, almost never)
+and hence its importance.
+<p>
+<TABLE>
+<TR><TD bgcolor=#999999 valign="top">* </TD><TD WRAP> 
+<b> gdbm_open name ?mode? </b><BR>
+<p>
+Purpose: This function opens the database <em>name</em>.
+The name of a database is a path/filename. 
+The <em>mode</em> is r (read only - default), w (write only), wc (write and create)
+ or n (new). A database can be opened multiple times in read-mode.
+ When a database has been opened in write-mode, it can't be concurrently accessed
+ by any other thread.<BR>
+Examples:
+
+<PRE>hcitcl>set dbname "/tmp/foo.gnu.db"
+hcitcl>gdbm_open $dbname wc
+hcitcl>gdbm_close $dbname
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">* </TD><TD> 
+<b> gdbm_fetch name key ?retvar | {}? </b><BR>
+<p>
+Purpose: This function returns the value associated with a particular key in the database.
+If a variable name (<em>retVar</em>) has been supplied, the returned value will be placed in it.
+If a variable name hasn't been supplied, the value will returned as the result of the function itself.
+A boolean result, indicating whether or not a key exists will be returned 
+if {} is used as the variable name.<BR>
+Notes: See also <b> gc_gdbm_operation fetch name key </b> <BR>
+Examples:
+
+<PRE>hcitcl>set dbname "/tmp/foo.gnu.db"
+hcitcl>gdbm_open $dbname wc
+hcitcl>gdbm_store $dbname A 100
+hcutcl>gdbm_store $dbname B {{foo 123} {kqq 568}}
+hcitcl>gdbm_fetch $dbname A
+100
+hcitcl>gdbm_fetch $dbname B outval ; echo $outval
+{foo 123} {kqq 568}
+hcitcl>gdbm_fetch $dbname C {}
+0
+hcitcl>gdbm_close $dbname
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">* </TD><TD> 
+<b> gdbm_insert name key data </b><BR>
+<p>
+Purpose: This function inserts a new key and its associated value in the database.
+The database must be open before this call can be used.
+An error will be generated when the key already exists.<BR>
+Notes: See also <b> gc_gdbm_operation insert name key data </b><BR>
+Examples:
+
+<PRE>hcitcl>set dbname "/tmp/foo.gnu.db"
+hcitcl>gdbm_open $dbname wc
+hcitcl>gdbm_insert $dbname F "new record"
+hcitcl>gdbm_insert $dbname F "..and again"
+Error: gdbm_insert: "/tmp/foo.gnu.db" 
+       "F" "..and again": error: cannot replace
+hcitcl>gdbm_close $dbname
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">* </TD><TD> 
+<b> gdbm_replace name key data</b><BR>
+<p>
+Purpose: This function replaces the value associated with an existing key in the database.
+The database must be open before this call can be used.
+An error will be generated when the key doesn't exists.<BR>
+Notes: See also <b> gc_gdbm_operation replace name key data </b><BR>
+Examples:
+
+<PRE>hcitcl>set dbname "/tmp/foo.gnu.db"
+hcitcl>gdbm_open $dbname wc
+hcitcl>gdbm_store $dbname G "to be replaced"
+hcitcl>gdbm_replace $dbname G "replacement" ; gdbm_fetch $dbname G
+replacement
+hcitcl>gdbm_replace $dbname JJ "replacement for a nonexisting key"
+### Ouch. Bug in Tcl extension: an error isn't reported. 
+### Consequently, gdbm_replace behaves like gdbm_store.
+### gdbm_fetch has to be used to check for the existence
+### of the key first:
+### if { [gdbm_fetch $dbname $key {}] == 1 } { 
+       gdbm_store $dbname $key $data
+    } else { error "gdbm_replace: \"$dbname\"  \
+             \"$key\" \"$data\": error: cannot replace"
+    }
+hcitcl>gdbm_close $dbname
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">* </TD><TD> 
+<b> gdbm_store name key data</b><BR>
+<p>
+Purpose: This function adds a key and its associated value in the database,
+whether the key already has a value associated with it or not.
+The database must be open before this call can be used.
+<BR>
+Notes: See also <b> gc_gdbm_operation store name key data </b><BR>
+Examples:
+
+<PRE>hcitcl>set dbname "/tmp/foo.gnu.db"
+hcitcl>gdbm_open $dbname wc
+hcitcl>gdbm_store $dbname "Smith" "233B#Baker Street#London#W1 5SB"
+hcitcl>gdbm_close $dbname
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">* </TD><TD> 
+<b> gdbm_list name</b><BR>
+<p>
+Purpose: This function returns a list of all keys in the database.<BR>
+Notes: Akin to the TclX procedkeylkeys.<BR>
+Examples:
+
+<PRE>hcitcl>set dbname "/tmp/foo.gnu.db"
+hcitcl>gdbm_open $dbname wc
+hcitcl>gdbm_store $dbname A 1 
+hcitcl>gdbm_store $dbname B 2 ; gdbm_store $dbname C 4
+hcitcl>gdbm_list $dbname
+A B C
+hcitcl>gdbm_close $dbname
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">--</TD><TD> 
+<b> gdbm_firstkey name</b><BR>
+<p>
+Purpose: This function returns the first key in the database. An empty string
+will be returned when the database contains no keys. <BR>
+Notes: Atomic gdbm procedure, used to implement the gdbm_list procedure.
+<BR>
+Voorbeelden: See gdbm_nextkey
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">--</TD><TD> 
+<b> gdbm_nextkey name key </b><BR>
+<p>
+Purpose: This function returns the next key in the database, 
+given the key preceeding it (<em>key</em>). An empty string will
+be returned when the database contains no more keys.<BR>
+Notes: Atomic gdbm procedure, used to implement the gdbm_list procedure.
+Can also be used for "fuzzy" key matching.<BR>
+Examples:
+
+<PRE>hcitcl>set dbname "/tmp/foo.gnu.db"
+hcitcl>gdbm_open $dbname wc
+hcitcl>gdbm_store $dbname A 1
+hcitcl>gdbm_store $dbname B 2 ; gdbm_store $dbname C 4
+hcitcl>for { set key [ gdbm_firstkey $dbname ] } { 
+             $key != "" } { 
+             set key [ gdbm_nextkey $dbname $key ] } { 
+             echo $key }
+A
+B
+C
+hcitcl>gdbm_close $dbname
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">* </TD><TD> 
+<b> gdbm_delete name key</b><BR>
+<p>
+Purpose: This function deletes a key and its associated value from the database.
+An error will be reported if the key isn't present in the database.<BR>
+Notes: See also <b> gc_gdbm_operation delete name key </b><BR>
+Examples:
+
+<PRE>hcitcl>set dbname "/tmp/foo.gnu.db"
+hcitcl>gdbm_open $dbname wc
+hcitcl>gdbm_close $dbname
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">--</TD><TD> 
+<b> gdbm_reorganize name</b><BR>
+<p>
+Purpose: This function reorganizes the database, optimizes its size and recereates the index.<BR>
+Notes: Should only be used after a lot of database deletions. <BR>
+Examples:
+
+<PRE>hcitcl>set dbname "/tmp/foo.gnu.db"
+hcitcl>gdbm_open $dbname wc
+hcitcl>gdbm_close $dbname
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">* </TD><TD> 
+<b> gdbm_close name</b><BR>
+<p>
+Purpose: This function closes a database.<BR>
+Examples:
+
+<PRE>hcitcl>set dbname "/tmp/foo.gnu.db"
+hcitcl>gdbm_open $dbname wc
+hcitcl>gdbm_close $dbname
+</PRE>
+</TD></TR>
+
+<TR><TD> &nbsp; </TD><TD bgcolor=#999999> 
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">**</TD><TD> 
+<b> gc_gdbm_operation operation name key ?data? </b>(in gen_gdbm_procs.tcl)<BR>
+<p>
+Purpose: This function performs an atomic transaction on the database.
+The database is opened, the transaction is performed and the database is closed.
+The transaction is either delete (remove by key), fetch (fetch by key), 
+insert (store by key, error if key already in database), 
+replace (replace by key, error if key not yet in database), 
+store (store by key). <BR>
+name  - name of the database to update = path & filename <BR>
+key   - key to use in the database <BR>
+data  - the data to store (optional) <BR>
+Examples:
+
+<PRE>hcitcl>source /tclprocs/gen_gdbm_procs.tcl
+hcitcl>gc_gdbm_operation store /tmp/foo.db A 100
+hcitcl>gc_gdbm_operation store /tmp/foo.db B 200
+hcitcl>gc_gdbm_operation fetch /tmp/foo.db A
+100
+hcitcl>gc_gdbm_operation insert /tmp/foo.db A 120
+Error: gdbm_insert: "/tmp/foo.db" "A" "120": error: cannot replace
+</PRE>
+</TD></TR>
+</TABLE>
+
+<p>
+gen_gdbm_procs.tcl
+
+
+<PRE>##############################################################################
+# proc gc_gdbm_operation - tclproc to perform an atomic database action
+#
+proc gc_gdbm_operation { op dbname dbkey { dbdata {} } } {
+
+   set retval {}
+
+   set catchVal [catch {
+
+      # Try to open DB..
+      set errCount 0
+      while 1 {
+          if [catch { gdbm_open $dbname wc } errval ] {
+             if { $errCount &lt 60 } {
+                  # wait one second and try again
+                  incr errCount
+                  sleep 1
+             } else {
+                  # even after quite a number of retries, things remain unsuccessfull
+                  # forward last error to caller
+                  error $errval
+             }
+          } else {
+             # so far, so good. dbase is open
+             break   ;# end while 1 loop
+          }
+      }
+
+      # DB is open, perform operation
+      switch -- $op {
+         delete {
+            gdbm_delete $dbname $dbkey
+         }
+         fetch {
+            set retval [ gdbm_fetch $dbname $dbkey ]
+         }
+         insert -
+         replace -
+         store {
+            gdbm_${op} $dbname $dbkey $dbdata
+         }
+         default {
+            error "Invalid operation '$op'"
+         }
+      }
+   }] ;# end-catch
+
+   # Close DB
+   catch { gdbm_close $dbname }
+
+   if { $catchVal } {
+        global errorInfo
+        # forward error to caller
+        error $errorInfo
+   }
+
+   return $retval
+}
+</PRE>
+
+
+<p>
+Copyright 2002 Health-Comm GmbH
+</BODY>
+</HTML>

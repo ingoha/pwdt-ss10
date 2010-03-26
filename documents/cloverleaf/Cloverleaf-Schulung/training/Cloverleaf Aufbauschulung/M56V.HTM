@@ -1,0 +1,244 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+ <img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 56: Coalescing/Splitting, Examples </h1>
+
+
+
+
+
+<h2>Example: Coalescing #1 </h2>
+
+This example consists of an IB-TPS script that coalesces 2 message types: 
+D4 and E4. These message types are always sent in that exact order.
+The source system does transmit other
+message types, these have to be continued unaffected by this procedure.  
+
+ 
+<PRE>######################################################################
+# Name:         joinD4-E4
+# Purpose:      Joins the contents of an E4 message to the contents
+#               of an D4 message. The E4 message is expected directly
+#               after receiving a D4 message.
+#               Note that D4/E4 can also be a reply to a query 
+#               (expect replies=on)
+#               this is why D4 is KILLed; this forces the driver to wait for 
+#               'another' reply, in this case E4.
+# UPoC type:    tps
+# Args:         tps keyedlist containing the following keys:
+#               MODE    run mode ("start", "run" or "time")
+#               MSGID   message handle
+#
+# Returns: tps disposition list:
+#          KILL         of D4 messages
+#          CONTINUE     of combined D4/E4 messages or all other message
+#                       types
+#
+
+proc joinD4E4_OK { args } {
+    keylget args MODE mode                      ;# Fetch mode
+
+    global previousMsgType
+    global D4msgBuffer
+
+    # If the D4 message is too short, spaces will be appended
+    set D4length 245
+    
+    set dispList {}     ;# Nothing to return
+
+    switch -exact -- $mode {
+	start {
+	    # Perform special init functions
+	    set previousMsgType ""
+	    set D4msgBuffer "" 
+	    return ""  
+	}
+
+	run {
+	    # 'run' mode always has a MSGID; fetch and process it
+	    keylget args MSGID mh
+
+	    # determine msgtype...
+	    set msgtype [ msgget $mh 0 2 ]
+	    switch -- $msgtype {
+	      "D4" {
+		   # check for errors..
+		   if { [cequal $previousMsgType "D4"] } {
+		      # Ouch. Somewhere an E4 went missing
+		      echo joinD4-E4(IB-TPS): processed a D4 after \
+			   a D4, E4 missing !
+		      msgmetaset $D4msgBuffer USERDATA "E4 missing"
+		      lappend dispList "ERROR $D4msgBuffer"
+		   }
+                   # hold new D4 in buffer
+		   set D4msgBuffer $mh
+		   set previousMsgType "D4"
+	      }
+	      "E4" {
+		   # check for errors..
+		   if { ! [cequal $previousMsgType "D4"] } {
+		      # Ouch. Somewhere an D4 went missing
+		      echo joinD4-E4(IB-TPS): processed an E4 without \
+			   preceeding D4 ?!
+                      msgmetaset $mh USERDATA "D4 missing"
+		      lappend dispList "ERROR $mh"
+		    } else {
+		      set E4msgContent [msgget $mh]
+		      msgset $mh [format "%-$D4length\s%s" [msgget $D4msgBuffer] \
+				  $E4msgContent]
+		      lappend dispList "CONTINUE $mh" 
+                      lappend dispList "KILL $D4msgBuffer"
+		   }
+		   set previousMsgType ""
+		   set D4msgBuffer ""
+	      } 
+	      default {
+		   # other msg types
+		   if { [cequal $previousMsgType "D4"] } {
+		      # Ouch. Somewhere an E4 went missing
+		      echo joinD4-E4(IB-TPS): processed a D4 after \
+			   a D4, E4 missing !
+		      msgmetaset $D4msgBuffer USERDATA "E4 missing"
+		      lappend dispList "ERROR $D4msgBuffer"
+		      set previousMsgType ""
+		      set D4msgBuffer ""
+		   }
+		   lappend dispList "CONTINUE $mh"
+	      }
+	    }
+	    # end switch
+	}
+
+	default {
+	    error "Unknown mode '$mode' in joinD4-E4"
+	}
+    }
+
+    return $dispList
+}
+</PRE>
+
+
+<h2>Example: Coalescing #2</h2>
+
+
+<PRE>######################################################################
+# Name:         gc_EDIcoalesce
+# Purpose:      Coalesces a number of edifact messages into 1 edifact 
+#               message. The last message in the to be coalesced batch
+#               has to have its last_in_group metadata flag raised.
+#               This is the inverse function of gc_EDIbatchSplit
+# UPoC type:    tps
+# Args:         tps keyedlist containing the following keys:
+#               MODE    run mode ("start", "run" or "time")
+#               MSGID   message handle
+#
+# Returns: tps disposition list:
+#          KILL     of all edifact messages
+#          CONTINUE of the single compacted edifact message
+#
+proc gc_EDIcoalesce { args } {
+    keylget args MODE mode           
+    global segUNA segUNB segUNZ batchMsg ediMsgs
+
+    set dispList {}           
+
+    switch -exact -- $mode {
+        start {
+            # Perform special init functions
+            set segUNA ""
+            set segUNB ""
+            set segUNZ ""
+            # The global batchMsg contains a Tcl list of messages
+            # that comprise the oubound batch.
+            set batchMsg ""
+            # The global ediMsgs contains the number of edifact messages
+            # in the outbound batch.
+            set ediMsgs 0
+            return ""
+        }
+
+        run {
+            # 'run' mode always has a MSGID; fetch and process it
+            keylget args MSGID mh
+            set msgdata [msgget $mh]
+            set FirstSeg [string range $msgdata 0 2]
+            if {[string compare $FirstSeg "UNA"] == 0} {
+               set FieldSep [string range $msgdata 3 3]
+               set SegSep [string range $msgdata 9 9]
+            } else {
+               error "Not an EDIFACT message, the UNA segment is missing."
+            }
+            set allsegs [split $msgdata $SegSep]
+            # strip UNA, UNB and UNZ from message
+            foreach seg $allsegs {
+             switch -- [string range $seg 0 2] {
+                UNA {
+                  if {[clength $segUNA] == 0} { set segUNA $seg }
+                }
+                UNB {
+                  if {[clength $segUNB] == 0} { set segUNB $seg }
+                }
+                UNZ {
+                  if {[clength $segUNZ] == 0} { set segUNZ $seg }
+                }
+                default {
+                  lappend batchMsg $seg
+                } 
+             }
+             # end case
+            }
+            # end foreach segment
+
+            # increase the amount of msgs in the outgoing edi batch msg
+            incr ediMsgs
+            # if the last in group metadata flag is set, send message.
+            if { [regexp "last_in_group" [msgmetaget $mh FLAGS]] } {
+               if {[clength $segUNZ] == 0 } {
+                 error "Not a correctly formatted EDIFACT message. \
+			Mandatory trailing UNZ segment is missing."
+               }
+               set unzlist [split $segUNZ $FieldSep ]
+               lvarpop unzlist 1 $ediMsgs
+               set locSegUNZ [join $unzlist $FieldSep]
+
+               set msg [ join "$segUNA $segUNB $batchMsg $locSegUNZ" $SegSep ]
+               # ?? somehow this joining results in 1 instance of '' -- fix below
+               regsub -all '' $msg ' msg
+               msgset $mh $msg
+
+               lappend dispList "CONTINUE $mh"
+
+               # reinit globals
+               set segUNA ""
+               set segUNB ""
+               set segUNZ ""
+               set batchMsg ""
+               set ediMsgs ""
+            } else {
+               lappend dispList "KILL $mh"
+            }
+        }
+
+        default {
+            error "Unknown mode '$mode' in gc_EDIcoalesce"
+        }
+    }
+    return $dispList
+}
+</PRE>
+
+
+<p>
+Copyright 1998,2001 Health-Comm GmbH
+</BODY>
+</HTML>

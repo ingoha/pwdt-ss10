@@ -1,0 +1,97 @@
+# record layout: hisadt
+#
+prologue
+    who:	HCI Network User
+    date:	Fri Oct 01 11:00:44 W. Europe Daylight Time 1999
+    version:	3.0
+    type:	frl
+end_prologue
+
+#
+# Include Files
+#
+
+include ExamMasks.frl
+
+#
+# Mask declarations
+#
+
+
+#
+# Field declarations
+#
+
+{NAME ControlValue} {TYPE fmt} { FMT {
+    { FILL {\x20} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 3 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 3 }
+}}
+{NAME TransactionCode} {TYPE fmt} { FMT {
+    { FILL % }
+    { JUST r }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL % }
+	    { IN_VERIFY 0 }
+	    { JUST r }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 5 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 5 }
+}}
+{NAME PatientName} {TYPE maskuse} { MASK NameMask }
+{NAME AdmitDrName} {TYPE maskuse} { MASK NameMask }
+{NAME AttendDrNme} {TYPE maskuse} { MASK NameMask }
+{NAME NurseStation} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 1 }
+	} {
+	    { DATATYPE ch }
+	    { FILL 0 }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 2 }
+	} {
+	    { DATATYPE ch }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 4 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 7 }
+}}

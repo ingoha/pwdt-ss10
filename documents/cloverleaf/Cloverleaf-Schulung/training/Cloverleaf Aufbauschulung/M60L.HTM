@@ -1,0 +1,54 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7>
+ Integrator - Level II Training </H1>
+
+<h1> Module 60L: Lab: The creation of replies in the IB-TPS</h1>
+
+
+
+
+
+<center>
+<TABLE BORDER="1">
+<TR><TD>std1</TD><TD>std2</TD><TD>std3</TD><TD>std4</TD><TD>std5</TD><TD>std6</TD><TD>std7</TD><TD>std8</TD></TR>
+<TR><TD>4160</TD><TD>4260</TD><TD>4360</TD><TD>4460</TD><TD>4560</TD><TD>4660</TD><TD>4760</TD><TD>4860</TD></TR>
+</TABLE>
+<br> <em><b>Table 60L.1 </b></em>
+</center>
+
+<p>
+<b>1.</b> Write an IB-TPS procedure that creates a reply message<img src="images/java2.gif"><BR>
+Update the current Network Configuration used in the JKA lab: <br> 
+Create a new 'cardio' thread and set its protocol to
+TCP/IP server, on the portnumber displayed in table 60.1L, with 4 bytes, exclusive,
+length encoding of the messages.
+Route all messages, using a raw route detail, to the archive thread. 
+The 'cardio' system expects a reply for each message it sends. The acknowledgement
+messages consist of the constant string "ACK" followed by the first ten bytes
+of the original message. <br>
+Develop a TPS procedure called <em>createReply</em> 
+that creates an acknowledgement message based on the data
+message it processes. Use the OVER disposition. 
+Apply the <em>createReply</em> TPS procedure in the Network Configurator
+using the appropriate UPoC.
+<BR>
+<b>1.1</b>
+Test your procedure with the aid of the testing tool.
+<BR>
+<b>1.2</b> Test the Network Configuration<BR>
+Run the engine and use the <em>hcitcptest</em> commandline tool to simulate
+the cardio system. Send a number of messages with a random content to Integrator and
+check the replies.
+
+<p>
+Copyright 1998 HIE Europe [60L+62L:130]
+</BODY>
+</HTML>

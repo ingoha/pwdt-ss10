@@ -1,0 +1,96 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+<h1>
+ <img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 73: Lab: TrxId determination procedure  </h1>
+
+
+
+
+Inbound messages (into the Integrator) all contain a field containg the LiquidFoodCode.
+In Lab 51 you wrote an IB-TPS that KILLed all messages with a LiquidFoodCode
+equal to 942 in order to prevent the translation and delivery of these messages.
+This lab provides an alternative solution in the form of a TrxId determination procedure.
+
+<p>
+<b>1.</b> TrxId procedure <BR>
+Create a TrxId determination procedure <em>determineDietTrxId</em>
+that returns a TrxId consisting of
+<UL>
+<LI> the standard HL7/EDIFACT/XML transaction id (use grmfetch) if the value of 
+     the LiquidFoodCode is unequal to 942;
+<LI> a concatenation of the the standard HL7/EDIFACT/XML transaction id 
+     and the constant string "X" if the LiquidFoodCode is equal to 942.
+</UL>
+Use either the grm Tcl extensions or string manipulation of the message content to retrieve
+the required fields.
+<p>
+<b>1.1</b> Applying the TrxId procedure <BR>
+Use the TrxId procedure to determine the transaction Id of messages read by
+the HIS/Dietician system. Route all <b>ADT_A01</b> (or: <b>MEDDIE/dietOrder</b>) messages to the jka thread.
+Remove the <em>filterIB_942</em> TPS procedure (created in Lab 51) from
+the IB TPS stack of the HIS/Dietician's system thread.<BR>
+Create a new 'archive' thread if it doesn't exist yet.
+Remove any existing routes to the archive system and route all message types
+<b>other</b> than <b>ADT_A01/MEDDIE/dietOrder</b> to the archive thread. 
+Assume that at least one sample message of all
+possible message types is included in the file with test messages.<BR>
+Run the engine and check for any remaning "No Routes defined for TrxId 'XYZ'" errors.
+Add a route to the archive thread for these message types.
+
+<p>
+<b>Hint:</b> to test a TrxId determination procedure with the aid of the testing tool one
+can simply create a TPS style procedure that calls the trxId determination procedure and echoes
+the value it returns. An example is shown below.
+
+
+<PRE>######################################################################
+# Name:		showTrxId
+# Purpose:	<description>
+# UPoC type:	tps
+# Args: 	tps keyedlist containing the following keys:
+#       	MODE    run mode ("start", "run" or "time")
+#       	MSGID   message handle
+#       	ARGS    user-supplied arguments:
+#               	<describe user-supplied args here>
+#
+# Returns: tps disposition list:
+#          <describe dispositions used here>
+#
+
+proc showTrxId { args } {
+    keylget args MODE mode              	;# Fetch mode
+
+    set dispList {}				;# Nothing to return
+
+    switch -exact -- $mode {
+        start {
+        }
+
+        run {
+	    # 'run' mode always has a MSGID; fetch and process it
+            keylget args MSGID mh
+            echo [determineDietTrxId $mh] 
+            lappend dispList "CONTINUE $mh"
+        }
+
+        default {
+	    error "Unknown mode '$mode' in showTrxId"
+        }
+    }
+
+    return $dispList
+}
+</PRE>
+
+
+<p>
+Copyright 1998,2003 Health-Comm GmbH [40][70]
+</BODY>
+</HTML>

@@ -1,0 +1,116 @@
+# record layout: Java_sfp
+#
+prologue
+    who:	HCI Network User
+    date:	Wed Aug 04 13:38:18 W. Europe Daylight Time 1999
+    version:	3.0
+    type:	frl
+end_prologue
+
+#
+# Include Files
+#
+
+include Masken.frl
+
+#
+# Mask declarations
+#
+
+
+#
+# Field declarations
+#
+
+{NAME TransmitterID} {TYPE fmt} { FMT {
+    { FILL {\x20} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 4 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 4 }
+}}
+{NAME Msg_Type} {TYPE fmt} { FMT {
+    { FILL {\x20} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 5 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 5 }
+}}
+{NAME PatientID} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL 0 }
+	    { IN_VERIFY 0 }
+	    { JUST r }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 12 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 12 }
+}}
+{NAME Prescribing_Dietican} {TYPE maskuse} { MASK SurNameIntials }
+{NAME Diatican_Phone_nbr} {TYPE maskuse} { MASK PhoneNumber }
+{NAME Action_Indicator} {TYPE fmt} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 1 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 1 }
+}}
+{NAME Solid_food_reference} {TYPE fmt} { FMT {
+    { FILL {\x20} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ai }
+	    { FILL 0 }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 10 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 10 }
+}}

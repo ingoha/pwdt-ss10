@@ -1,0 +1,67 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 82: Lab: PDL Styles</h1>
+
+
+
+
+
+The aim of this exercise is to create a PDL to be used as a protocol driver for a system 
+that uses a transport mechanism where data messages start
+with a XXX character sequence and end with a ZZZ character sequence: 
+<b>XXX</b>&lt;message content><b>ZZZ</b>.
+
+<p>
+<b>1.1</b> Basic Style PDL <BR>
+In this excercise no ack or nak messages are used, which is why a PDL using a <em>basic</em> style can be used.
+The actual steps to create, compile and test the PDL are as follows:
+<UL>
+<LI>Copy the mlp_tcp.pdl (which also uses the basic style) from $HCIROOT/pdls 
+    to $HCISITEDIR/pdls/xxx_tcp.pdl;
+<LI>Edit the xxx_tcp.pdl file and redefine the phrase definition of the basic-message phrase;
+<br>
+<b>define phrase basic-msg; <br>
+&nbsp;&nbsp;&nbsp;    "XXX"; <br>
+&nbsp;&nbsp;&nbsp;    field data = variable-array( not( "Z" ) ); <br>
+&nbsp;&nbsp;&nbsp;    "ZZZ"; <br>
+&nbsp;&nbsp;&nbsp;    &lt;nl&gt;; <br>
+end phrase; </b><br> 
+<LI>Compile the PDL by executing <em>hcipdc xxx_tcp.pdl</em> at the command line. The
+result of the compilation process is a file called <em>xxx_tcp.pdo</em>;
+<LI>Change the protocol configuration of the JKA thread to
+tcp/ip PDL, xxx_tcp.pdl, in tcp/ip server mode, on port &lt;portnumber>; 
+Make sure that the await_replies option of the JKA thread is <b>not</b> used.
+<LI>Start the engine and use <em>hcitcptest -h localhost -t raw -p &lt;portnumber></em> to simulate 
+the remote connection. Check the format of the messages being displayed. Any messages
+entered by you in hcitcptest will only be accepted by the Integrator if they start
+with a XXX character sequence and end with a ZZZ character sequence.
+</UL>
+
+<p>
+<b>1.2</b> AckNak Style PDL <BR>
+Change the PDL created in excercise 1.1 to be of style <em>acknak</em>. 
+An acknowledgement message consists of the string "XXXACKZZZ"; &lt;nl&gt; (where &lt;nl&gt; is the newline character, ASCII 10), 
+a negative acknowledgement of the string "XXXNAKZZZ"; &lt;nl&gt;. 
+Set the number of retries to 3 and the time out to 15 seconds.
+<UL>
+<LI>Compile the new version of the PDL; 
+<LI>(Re)start the engine process and use <em>hcitcptest -h localhost -t raw -p &lt;portnumber></em> to simulate 
+the remote connection. Check the format of the messages being displayed. 
+Simulate the remote system by transmitting (negative) acknowledgment messages to Integrator.
+</UL>
+
+
+<p>
+Copyright 1999,2003 [50][45]
+</BODY>
+</HTML>

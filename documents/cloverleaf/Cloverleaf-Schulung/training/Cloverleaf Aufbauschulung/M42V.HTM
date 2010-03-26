@@ -1,0 +1,137 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+<h1>
+ <img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 42: Code fragments II, examples </h1>
+
+
+
+
+
+
+<PRE>#########################################################
+# Name:		getInitials
+# UPoC type:    xltp XLT - CALL
+# Args:		none
+#
+proc getInitials {} {
+    upvar xlateId       xlateId		\
+	  xlateInList   xlateInList	\
+	  xlateInTypes  xlateInTypes	\
+	  xlateInVals   xlateInVals	\
+	  xlateOutList  xlateOutList	\
+	  xlateOutTypes xlateOutTypes	\
+	  xlateOutVals  xlateOutVals
+
+# xlateInvals contains n fields, which contain the following:
+#	0. calling name (called by), of which the first character 
+#          will be used for a 1st initial
+#        1. other initials
+# translate to a single field containing
+#	all initials
+
+set init1 [string index [lindex $xlateInVals 0] 0]
+set init ""
+
+if {[clength $init1] > 0} {
+  set init $init1
+  append init "."
+}
+
+append init [lindex $xlateInVals 1]
+
+xpmstore $xlateId $xlateOutList c $init
+}
+
+######################################################
+# Name:		setDeclarist
+# UPoC type:	CALL xltp
+# Args:		none
+#
+#
+proc setDeclarist {} {
+    upvar xlateId       xlateId		\
+	  xlateInList   xlateInList	\
+	  xlateInTypes  xlateInTypes	\
+	  xlateInVals   xlateInVals	\
+	  xlateOutList  xlateOutList	\
+	  xlateOutTypes xlateOutTypes	\
+	  xlateOutVals  xlateOutVals
+
+# xlateinvals contains n fields, which contain the following:
+#       0. serimba field 00008 aanvragercode
+#       1. serimba filed 00104 instelling
+# translate to four fields, containing
+#	0. hoofdaanvrager 	
+#	1. ref_hoofdaanvrager		
+#	2. specificatie aanvrager        
+#	3. ref_specificatie aanvrager
+
+set aCode [lindex  $xlateInVals 0]
+set instelling [string trim [lindex  $xlateInVals 1] \" ]
+
+if {[clength $instelling] == 0} {
+	# interne specialist
+        set ha [ string range $aCode 1 end ]
+        set ref_ha 7
+        set spec "0000"
+        set ref_spec "0"
+} else {
+	# geen interne specialist
+        set ha $instelling
+	set ref_ha 1
+	set spec [ string range $aCode 1 end ]
+        set ref_spec [ string index $aCode 0 ]
+        if {[cequal $ref_spec 5 ]} {
+           set ref_spec 7
+        } else {
+           if {[cequal $ref_spec "H" ]} {
+              set ref_spec 6
+           }  else {
+              set ref_spec "!"
+           }
+        }
+}
+xpmstore $xlateId [lindex $xlateOutList 0] c $ha
+xpmstore $xlateId [lindex $xlateOutList 1] c $ref_ha
+xpmstore $xlateId [lindex $xlateOutList 2] c $spec
+xpmstore $xlateId [lindex $xlateOutList 3] c $ref_spec
+}
+
+# -------------------
+
+######################################################################
+# Name:		filterBacaanXlate
+# UPoC type:	xltp
+# Args:		none
+#
+proc filterBacaanXlate {} {
+    upvar xlateId       xlateId		\
+	  xlateInList   xlateInList	\
+	  xlateInTypes  xlateInTypes	\
+	  xlateInVals   xlateInVals	\
+	  xlateOutList  xlateOutList	\
+	  xlateOutTypes xlateOutTypes	\
+	  xlateOutVals  xlateOutVals
+# xlateInvals contains n fields, which contain the following:
+#       0. kind of mutation (1 2 or 3 )
+# Kill the entire translation unless 
+#  kind of mutation == 1 or 2.
+
+set mut [lindex $xlateInVals 0]
+
+  if {$mut == 1 || $mut == 2} {
+    # nada, msg ok
+  } else {
+    set msg "Killing BACAAN Xlate with kind of mutation = $mut"
+    xpmerror $xlateId curdetail $msg
+  }
+}
+</PRE>

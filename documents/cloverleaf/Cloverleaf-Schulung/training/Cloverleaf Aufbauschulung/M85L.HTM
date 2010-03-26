@@ -1,0 +1,102 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 85: Lab: Custom PDL</h1>
+
+
+
+
+
+The aim of this exercise is to create a PDL to be used as a protocol driver for POLAR systems 
+that use a transport mechanism where data messages are constructed as having 6 elements:<br>
+<b>LEN STX data ETX BCC VT</b>, where:
+<UL>
+<LI>STX, ETX and VT are 1-byte character values;
+<LI>LEN is a 7-character length encoding, ASCII based, right justified, with "0" fill characters,
+containing the length of the entire message <b>exclusive</b> of the LEN and VT fields.
+<LI>BCC is a 3-character field checksum, calculated over all bytes from STX up to ETX 
+(STX and ETX inclusive) by means of addition modulo 256. The BCC field contains the ASCII encoding of the checksum, 
+prefixed by "0" fill characters if required.
+<LI>An ACK message contains the string "ACK" as its data, a 'clear to send' message contains "CTS" as its data,
+a NAK message contains "NAK" as its data, and a 'request to send' message contains the string "RTS". 
+<br> Note: All NAK-messages start with the string "NAK". 
+Some implementations of POLAR are known to append the reason for the NAK message,
+e.g. "NAK Timeout" or "NAK Checksum Failure".
+</UL>
+
+The session level protocol when sending messages to POLAR is as follows:
+<UL>
+<LI>1. Send a RTS message;
+<LI>2. Listen for CTS - retry RTS message max 3 times in case of NAK or timeout;
+<LI>3. Send data message;
+<LI>4. Listen for ACK;
+</UL>
+
+The session level protocol when receiving messages from POLAR is as follows:
+<UL>
+<LI>1. Listen for a RTS message - manage garbage and timeout errors; 
+<LI>2. Transmit CTS;
+<LI>3. Listen for data message - manage garbage and timeout errors; 
+<LI>4. Transmit ACK;
+</UL>
+
+The timout value to take into account has been defined by POLAR as being 30 seconds.
+
+
+<p>
+<b>1.1</b> PDL - Write <BR>
+Write a customized PDL that contains a phrase which matches the defined message structure and redefine
+the hci_pd.write procedure to handle the session level protocol for writing the messages. 
+Test the PDL using a thread and the testing tool (in RAW mode). 
+
+<br><br>If the data message is NAKed, set the <a href="m20.htm#flags">proto_nak metadata flag</a> before returning
+the error code to the engine (see below for code snippet example).
+ This will cause the engine to retry the sending of the message
+as many times as are specified in the num_retries field on the OB tab of the thread properties.
+If your driver contains its own resend mechanism, don't forget to set this field to 0.
+
+<PRE>    # put error message in the USERDATA metadata field
+    set metaInfo [msgmetaget $MsgId USERDATA]
+    set errMsg {Message NAKed by POLAR}
+    if { [catch { keylset metaInfo ERROR $errMsg } ] == 1 } {
+      set metaInfo ""
+      keylset metaInfo ERROR $errMsg
+    }
+    msgmetaset $MsgId USERDATA $metaInfo
+
+    # return error to engine
+    msgmetaset $MsgId FLAGS {{proto_nak 1}}
+    hci_pd_set_result_code 1
+</PRE>
+
+<b>2.2 (optional)</b>Test your PDL connecting to port 6006 on the TCP/IP address provided by the trainer.
+This is a connection to a program which simulates the behaviour (including typical errors) of a system that supports
+the POLAR protocol.
+
+<p>
+<b>2.3 (optional)</b>As you may (or may not) have noticed the simulation program expects to recieve data according to the <b>cp850</b> character encoding. 
+Add the necessary encoding transliteration Tcl code to the PDL or to a new OB-TPS Tcl procedure.
+See <a href="m54.htm">Module 54: Character Encoding</a> for details related to encoding and transliteration. 
+Test your implementation by sending some extended characters (ASCII > 127) to the simulation program. Check the logging
+of the simulation program to see whether or not the extended characters are correctly shown.
+
+<p>
+<b>2.1</b> Polar PDL <br>
+Complete the PDL created in excercise 1.1 by adding the session level protocol functions for the receipt
+of POLAR messages. Test the PDL by using 2 threads that both use the POLAR pdl. Create a new EO configuration to
+display ALL DEBUG messages for the modules <b>pdl</b> and <b>pd</b> and apply it to the threads using the POLAR pdl.
+
+
+<p>
+Copyright 2001,2002
+</BODY>
+</HTML>

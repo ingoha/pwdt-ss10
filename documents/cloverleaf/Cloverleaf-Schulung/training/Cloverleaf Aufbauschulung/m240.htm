@@ -1,0 +1,205 @@
+<HTML>
+<HEAD>
+	<TITLE>Integrator Level II+ Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7>
+ Integrator - ODBC Training </H1>
+
+<h1> Module 240: Stored Procedures </h1>
+
+
+
+
+
+Many database procedures (or "stored procedures") can be called in place of an SQL
+statement.
+A procedure is an executable object stored on the data source. Generally, it is one 
+or more SQL statements that have been precompiled. The syntax for calling procedures
+varies from one DBMS to another, but ODBC provides a standard escape sequence for calling
+procedures. The escape sequence for calling a procedure is:
+
+
+<PRE>{[?=]call procedure-name[([parameter][,[parameter]]...)]}
+
+# Examples:
+{?=CALL maketables(?)}
+{CALL do_stuff}
+{call do_stuff()}  # fails. When no parameters are supplied, parenthesis shouldn't be used.
+</PRE>
+
+
+A procedure can have zero or more parameters. It can also return a value, as 
+indicated by the optional parameter marker ?= at the start of the syntax. If 
+parameter is an input or an input/output parameter, it can be a literal or a 
+parameter marker. 
+If parameter is an output parameter, it must be a parameter marker. 
+Parameter markers must be bound with <b>SQLBindParameter</B> before the procedure 
+call statement is executed. 
+For <b>SQLBindParameter</b>, an application should use the <em>fParamType</em>
+(SQL_PARAM_INPUT, SQL_PARAM_OUTPUT or SQL_PARAM_INPUT_OUTPUT)
+ argument appropriate to the type of the parameter that is being bound.
+<p>
+Input and input/output parameters can be omitted from procedure calls. If a 
+procedure is called with parentheses but without any parameters, such as 
+{call procedure-name()}, the driver instructs the data source to use the 
+default value for the first parameter. If the procedure does not have any 
+parameters, this may cause the procedure to fail. If a procedure is called 
+without parentheses, such as {call procedure-name}, the driver does not 
+send any parameter values.
+<p>
+Literals can be specified for input and input/output parameters in procedure 
+calls. However, interoperable applications should always use 
+parameter markers, as some data sources do not accept literal parameter 
+values. For example, suppose the procedure InsertOrder has five input 
+parameters. The following call to InsertOrder omits the first parameter, 
+provides a literal for the second parameter, and uses a parameter marker 
+for the third, fourth, and fifth parameters:
+
+
+<PRE>{call InsertOrder(, 10, ?, ?, ?)}   # Not interoperable!
+</PRE>
+
+
+<p>
+Note that if a parameter is omitted, the comma delimiting it from other 
+parameters must still appear. If an input or input/output parameter is 
+omitted, the procedure uses the default value of the parameter. Another 
+way to specify the default value of an input or input/output parameter 
+is to set the value of the length/indicator buffer bound to the parameter 
+to SQL_DEFAULT_PARAM.
+If an input/output parameter is omitted or if a literal is supplied for 
+the parameter, the driver discards the output value. Similarly, if the 
+parameter marker for the return value of a procedure is omitted, the 
+driver discards the return value. Finally, if an application specifies 
+a return value parameter for a procedure that does not return a value, 
+the driver sets the value of the length/indicator buffer bound to the 
+parameter to SQL_NULL_DATA.
+
+<p>
+Some procedures can return one or more result sets. In these cases the
+result sets are fetched like any other, using the normal ODBC functions to retrieve
+results. See <a href="m230.htm">Module 230: Retrieving Results</a>.
+
+<p>
+Not all data sources support procedures. To find out whether a data source
+supports procedures, call <b>SQLGetInfo</b> with <em>fInfoType</em> SQL_PROCEDURES.
+This returns a character string, either "Y" or "N".
+
+<p>
+The list below contains a description and the usage of some of the ODBC functions. 
+The flag that preceeds the procedure name (**,* or --) indicates the frequency of 
+use of the procedure (frequently, regularly, almost never) and hence its importance. 
+<TABLE>
+
+<TR><TD bgcolor=#999999 valign="top">
+* </TD><TD><b>odbc SQLProcedureColumns hstmt CatalogName len SchemaName len ProcName len ColumName len</b><br>
+   Purpose: This function returns the list of input and output parameters, as well as the 
+            columns that make up the result set for the specified procedures. The driver 
+            returns the information as a result set on the specified statement.<BR>
+            <TABLE BORDER="1" WIDTH=600>
+            <TR><TD>hstmt</TD><TD>input</TD><TD>Statement handle
+            <TR><TD>CatalogName</TD><TD>input</TD><TD>ProcQualifier. Procedure catalog name.
+            <TR><TD>len1</TD><TD>input</TD><TD>Length of CatalogName 
+            <TR><TD>SchemaName</TD><TD>input</TD><TD>ProcOwner. String search pattern for schema names.
+            <TR><TD>len2</TD><TD>input</TD><TD>Length ofSchemaName
+            <TR><TD>ProcName</TD><TD>input</TD><TD>String search pattern for procedure names.
+            <TR><TD>len3</TD><TD>input</TD><TD>Length of ProcName
+            <TR><TD>ColumnName</TD><TD>input</TD><TD>String search pattrn for column names.
+            <TR><TD>len4</TD><TD>input</TD><TD>Length of ColumName
+            </TABLE>
+   Return codes: SQL_SUCCESS, SQL_SUCCESS_WITH_INFO, SQL_STILL_EXECUTING, SQL_ERROR, 
+                 or SQL_INVALID_HANDLE.
+                 Note that this Tcl procedure may return a TCL_ERROR if a severe
+                 error occurs in the Tcl extension layer unrelated to ODBC. <br>
+   Notes: This procedure may not be available in some data sources. 
+          SQLProcedureColumns might not return all columns used by a procedure. 
+          For example, a driver might only return information about the parameters 
+          used by a procedure and not the columns in a result set it generates. <br>
+   Examples:
+
+<PRE>odbc SQLProcedureColumns NULL 0 NULL 0 NULL 0 NULL 0
+odbc SQLProcedureColumns dev1 SQL_NTS NULL 0 proc_name SQL_NTS NULL 0 (??)
+
+# If an existing statement handle is used, make sure that it is freed
+# before calling SQLProcedureColumns
+odbc SQLFreeStmt $hstmt SQL_RESET_PARAMS 
+odbc SQLFreeStmt $hstmt SQL_UNBIND
+odbc SQLFreeStmt $hstmt SQL_CLOSE 
+odbc SQLProcedureColumns NULL 0 NULL 0 procedure_name SQL_NTS NULL 0 (??)
+</PRE>
+</TD><TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+* </TD><TD><b>odbc SQLProcedures hstmt CatalogName len SchemaName len ProcName len</b><br>
+   Purpose: This function eturns the list of procedure names stored in a specific 
+            data source. Procedure is a generic term used to describe an executable object, 
+            or a named entity that can be invoked using input and output parameters. <BR>
+            <TABLE BORDER="1" WIDTH=600>
+            <TR><TD>hstmt</TD><TD>input</TD><TD>Statement handle
+            <TR><TD>CatalogName</TD><TD>input</TD><TD>ProcQualifier. Procedure catalog name.
+            <TR><TD>len1</TD><TD>input</TD><TD>Length of CatalogName 
+            <TR><TD>SchemaName</TD><TD>input</TD><TD>ProcOwner. String search pattern for schema names.
+            <TR><TD>len2</TD><TD>input</TD><TD>Length ofSchemaName
+            <TR><TD>ProcName</TD><TD>input</TD><TD>String search pattern for procedure names.
+            <TR><TD>len3</TD><TD>input</TD><TD>Length of ProcName 
+            </TABLE>
+   Return codes: SQL_SUCCESS, SQL_SUCCESS_WITH_INFO, SQL_STILL_EXECUTING, 
+                 SQL_ERROR, or SQL_INVALID_HANDLE.
+                 Note that this Tcl procedure may return a TCL_ERROR if a severe
+                 error occurs in the Tcl extension layer unrelated to ODBC. <br>
+   Notes: <BR>
+   Examples:
+
+<PRE>odbc SQLProcedures $hstmt NULL 0 NULL 0 NULL 0
+</PRE>
+</TD><TR>
+</TABLE>
+
+
+<h1> Data Source Specific Notes </h1>
+
+
+This section contains some notes regarding the execution of stored procedures
+related to the use of various databases. The SQL syntax for execution of a stored procedure
+can mostly be specified both as a protable ODBC escape sequence or in the form
+of a data source specific SQL statement.
+
+<h2> Sybase Notes </h2>
+
+(Peter SJ at Panmure) <br>
+Sybase stored procedures can be used from odbc using
+SQLExecDirect (the 'call' statement is not used).
+SQLGetData is used to fetch the result sets (no binding of any parameters).
+<p>
+(Peter G at Lazard) <br>
+the stored procedure can be executed by the following sql:
+"procedure_name @parameter_name=value [, @parameter_name=value] ...."
+<p>
+SQLBindParameter should be used with the appropriate SqlType parameter for all parameters. The
+sql type of the parameters can be determined by using the SQLProcedureColumns call.
+
+<h2> Oracle Notes </h2>
+
+a problem with "unresolved symbols" when connecting to Oracle from <em>hcitcl</em>.
+Within the cloverleaf engine itself this error doesn't occur.
+<p>
+the connection parameter ProcedureRetResults (PRR) must be set to 1 or no result set
+will be returned by the data source. See the Integrator odbc help, section
+"connecting to a data source using a connection string" in chapter 11. 
+<p>
+SQLBindParameter can be used with SQL_CHAR as the SqlType parameter for all parameters.
+
+<h2> Informix Notes </h2>
+
+SQLBindParameter can be used with SQL_CHAR as the SqlType parameter for all parameters.
+
+
+<p>
+Copyright 1999 HIE Europe
+</BODY>
+</HTML>

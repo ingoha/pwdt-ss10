@@ -1,0 +1,395 @@
+<HTML>
+<HEAD>
+        <TITLE>Module 150: Processing EDIFACT messages</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7><br>
+ Integrator - Level II Training </H1>
+
+<h1> Module 150: Processing Edifact </h1>
+
+
+
+
+
+The EDIFACT message standard was created around 1985. The standardization process
+of EDIFACT messages and their use are promoted by the UN.
+The EDIFACT message definition is a generic 'wrapper' format, it has no explicit underlying data model.
+EDIFACT is mostly used in the business areas of Finance and Logistics.
+Its use in healthcare is limited to a number of countries and a number of message types.
+<p>
+The EDIFACT message specification (i.e. its syntax) is either created by the UN standardization body or
+by a national (healthcare) standardization body. 
+See <a href="http://www.unece.org/trade/untdid/">www.unece.org</a> for the definitions of UN EDIFACT
+messages based on directories 95A up to 98B. 
+<p>
+A message specification specifies its syntax. Since there is no explicit data model
+for EDIFACT messages the message syntax is basically useless without a <em>message implementation guide</em> (MIG).
+A MIG describes how a message is to be used and the semantics of its elements. 
+Note that most standardization bodies regard MIGs as a commodity, their contents aren't
+freely available and have to be bought.
+<p>
+This module describes some issues related to the processing
+of EDIFACT messages that require Tcl scripts in order to deal with them.
+
+
+<h2>1. Inbound EDIFACT</h2>
+
+
+<b>1.1 Use of CRLF:</b> One of the main issues when dealing with EDIFACT is the fact that most
+systems send or elect to receive messages that strictly taken don't comply
+with the EDIFACT standard at all. The EDIFACT-compliant message 
+<PRE>       UNH+....'PAT+....'UNT+nnn</PRE> is
+often sent as:
+<PRE>       UNH+....'
+       PAT+....'
+       UNT+nnn</PRE>
+Instead of a single ' character being used as a segment separator, these systems
+use ' and a Carriage Return (CR, ascii 13) and/or a Linefeed character (LF, ascii 10) as the
+segment separator. 
+<p>
+Solution: use an IB TPS procedure that removes all CR and LF characters from the message. 
+If messages of this type are transported using files you should
+ use the FILESET/FTP protocol in "Single Message Mode"
+to read the message.
+
+<PRE>   run {
+       # Remove all CR and LF characters from message/file...
+       keylget args MSGID mh
+       set msgdata [msgget $mh]      
+       regsub -all \n $msgdata "" msgdata
+       regsub -all \r $msgdata "" msgdata
+       msgset $mh $msgdata
+       lappend dispList "CONTINUE $mh"
+   }
+</PRE>
+
+See <em>gc_joinEDIfragments</em> (which removes CR and LF) and
+<em>gc_splitEDIinterchange</em> (which removes CR and LF as part of its functionality, see 1.2)
+ in the gen_edi_procs.tcl file for 
+examples of procedures
+that remove both CR and LF characters.
+
+<p>
+<b>1.2 Interchanges:</b> The EDIFACT standard is based on the concept of interchanges, i.e.
+batches of EDIFACT messages contained within an interchange envelope. 
+The support of EDIFACT in the Integrator is geared towards individual messages, not to interchanges. 
+
+<!----------------
+
+<p>
+Note: Integrator doesn't support interchanges for EDIFACT variant messages.
+[HUBad04866]
+
+------------------>
+
+<PRE>       UNB'+....'UNH+.msg1...'PAT+....'UNT+nnn'UNH+.msg2...'PAT+....'UNT+nnn'UNZ+...</PRE>
+
+The interchange above contains 2 individual messages (UNH..UNT) and has to be processed by the Integrator as 
+2 separate messages:
+
+<PRE>       UNH+.msg1...'PAT+....'UNT+nnn'
+       UNH+.msg2...'PAT+....'UNT+nnn</PRE>
+
+Solution: use an IB TPS procedure that removes the interchange segments and splits
+(CONTINUEs) the individual messages contained within it into the engine. The Tcl code below
+shows the main idea behind such an approach.
+
+<PRE>   run {
+       keylget args MSGID mh
+       set msgdata [msgget $mh]      
+
+       set segList [split $msgdata ']
+       foreach seg $segList {
+          set segname [crange $seg 0 2]
+          switch $segname {
+             UNA { ....... }
+             UNB { ....... }
+             UNH { set outmsg '$seg }
+             UNT { append outmsg '$seg
+                   set mhnew [msgcreate -recover $outmsg]
+                   # CONTINUE the message in the interchange
+                   lappend dispList "CONTINUE $mhnew"
+             }
+             default { append outmsg '$seg }
+          }
+       }
+       # Kill the original interchange message
+       lappend dispList "KILL $mh"
+   }
+</PRE>
+
+<br>
+See the <em>gc_splitEDIinterchange</em> procedure in the gen_edi_procs.tcl 
+file for a procedure that accomplishes the splitting of interchanges into messages using
+the approach descibed above.
+
+
+<p>
+<b>1.3 Escaped characters:</b> The current version of the Integrator has no build-in support
+for escaped characters. When a reserved character (e.g. the segment separator ') is used
+as a value within a field the character is preceeded by an escape character 
+(normally the ? character) which specifies that the next character shouldn't be parsed
+as if it were part of the message syntax. A field value of
+<PRE>            Dr.Bob says:'1+1=3'</PRE>
+will be sent as: (fieldvalue shown within a component)
+<PRE>            xx+227:Dr.Bob says?:?'1?+1=3?'+zzz</PRE>
+<p>
+Since Integrator doesn't make a distinction between escaped and non-escaped reserved
+characters when parsing the message it is imperitive that the escaped characters be dealt
+with before the engine attempts to parse the message in the translation thread. [HUBad04688]
+
+<p>
+Solution: Use 1. an IB TPS procedure to replaces all occurences of 
+escaped Edifact separators by characters with ASCII values lower than 28, and 
+2. an OB TPS procedure to replace all occurrences of these 'low' ASCII values
+in the translated message by the original characters.
+3. (as an alternative to 2) a Code Fragment Tcl procedure that 
+replaces all occurrences of these 'low' ASCII values
+in the translated field(s) by the original characters. 
+<p>
+Note that ASCII values lower than 28 don't occur in Edifact messages. The EDIFACT
+standard supports a couple of syntax types:
+Syntax type UNOA contains the ASCII characters A..Z, 0..9 and any character in
+the set "-.,()/-=:+'?!"%&*;&lt;&gt;". 
+Syntax type UNOB contains a..z, ASCII 28 to 31 and all characters in UNOA.
+Syntax type UNOC amounts to all characters in the set formed by ASCII 28 up to ASCII 255.
+<PRE>        # 'Replace' IB TPS procedure
+        run {
+            keylget args MSGID mh
+            set msg [msgget $mh]
+
+            regsub -all \\?' $msg \x06 msg
+            regsub -all \\?\\+ $msg \x07 msg
+            regsub -all \\?\\? $msg \x08 msg
+            regsub -all \\?: $msg \x09 msg
+            msgset $mh $msg
+            lappend dispList "CONTINUE $mh"
+        }
+
+        # Our example message would be transformed into: (shown with additional spaces)
+        xx+227:Dr.Bob says \x09 \x06 1 \x07 1=3 \x06 +zzz
+
+        # 'unReplace' OB TPS procedure
+        run {
+            keylget args MSGID mh
+            set msg [msgget $mh]
+
+            regsub -all \x06 $msg ' msg
+            regsub -all \x07 $msg + msg
+            regsub -all \x08 $msg ? msg
+            regsub -all \x09 $msg : msg
+
+            msgset $mh $msg
+            lappend dispList "CONTINUE $mh"
+        }
+
+        # Suppose our example field was copied into a (@ separated) VRL field:
+        @fieldvalue@anotherfield@Dr.Bob says \x09 \x06 1 \x07 1=3 \x06@field..
+        # After applying the unreplace procedure in the OB TPS:
+        @fieldvalue@anotherfield@Dr.Bob says:'1+1=3'@field..
+
+        # 'unReplace' Code Fragment pocedure
+        proc unreplaceChars { } {
+            upvar xlateInVals   xlateInVals	\
+                  xlateOutVals  xlateOutVals
+
+        regsub -all \x06 $xlateInVals ' xlateInVals
+        regsub -all \x07 $xlateInVals + xlateInVals
+        regsub -all \x08 $xlateInVals ? xlateInVals
+        regsub -all \x09 $xlateInVals : xlateInVals
+        set xlateOutVals $xlateInVals
+        }
+
+</PRE>
+
+<p>
+See the <em>gc_replaceStdEdiEscSeps</em> (IB TPS, replaces escaped characters in inbound EDIFACT messages) 
+and <em>gc_unReplaceStdEdiEscSeps</em> (OB TPS, apply to EDIFACT mesages that have been translated
+to some other format) procedures
+ in the gen_edi_procs.tcl 
+file for examples of procedures that implement the solution suggested above.
+
+<p>
+<b>1.4 Message type:</b>
+
+Integrator uses the EDIFACT message name as its transaction ID (TrxId). 
+Quite often messages will need to be routed based on a transaction ID
+that is a combination of the message name, its intended recepient or
+the directory that was used.
+
+
+<p>
+Note: Integrator versions lower than 3.7 contain an error in the code that determines the
+message type of an EDIFACT message. If the trxId determination is configured to be
+EDIFACT the wrong message type may be fetched and used for routing. This has been corrected
+in version 3.7. Use the gc_determineEDITrxId (or any other) TrxId determination procedure 
+for versions lower than 3.7. [HUBad04862, solved in 3.7]
+
+
+<p>
+Solution: use a trxId determination procedure instead of the standard EDIFACT TrxId determination.
+<p>
+See the <em>gc_determineEDITrxId</em> (returns the message name) 
+and <em>gc_detCombiEDITrxId</em> (returns a concatenation of message name and recepient ID) procedures
+in the gen_edi_procs.tcl file for examples of EDIFACT TrxId determination procedures.
+
+
+<h2>2. Xlate issues</h2>
+
+
+<b>2.1 Field validation:</b> For a discussion of message validation,
+see <a href="m130.htm">Module 130: Syntactic and Semantic Validation of message contents</a>.
+
+<p>
+<b>2.2 Date/Time qualifiers:</b> When the definition of a field within a message format has
+been defined as one of the date/time formats supported by the Integrator (See Table 150.2) 
+the transformation
+of date/time fields will be taken care of by the translation system. 
+The EDIFACT message type doesn't specify what date/time format will be used, it is up
+to the MIG to define what formats are allowed in particular circumstances. The format used
+is denoted by a numeric value in a qualifier field. 
+The date/time formats and their qualifiers as defined by the EDIFACT standard are listed
+in table 150.1. Because of the use of qualifiers the translation system isn't able to
+automatically transform date/time fields.
+
+<p>
+<TABLE border="1">
+<TR bgcolor=#AAAAAA><TD> Qualifier </TD><TD> Format </TD></TR>  
+<TR><TD>        101    </TD><TD>   &nbsp;&nbsp;YYMMDD     </TD></TR>        
+<TR><TD>        102     </TD><TD>  CCYYMMDD          </TD></TR>  
+<TR><TD>        201     </TD><TD>    &nbsp;&nbsp;YYMMDDHHMM         </TD></TR>  
+<TR><TD>        202     </TD><TD>    &nbsp;&nbsp;YYMMDDHHMMSS        </TD></TR>  
+<TR><TD>        203     </TD><TD>  CCYYMMDDHHMMSS        </TD></TR>  
+<TR><TD>        601   </TD><TD>      &nbsp;&nbsp;YY</TD></TR>  
+<TR><TD>        602     </TD><TD>  CCYY</TD></TR>  
+<TR><TD>        610     </TD><TD>  CCYYMM                </TD></TR>  
+</TABLE>
+Table 150.1
+
+<p>
+<TABLE border="1">
+<TR bgcolor=#AAAAAA><TD> Internal datatype </TD><TD> Format </TD></TR> 
+<TR><TD>        dt   </TD><TD>    [CC]YYMMDD      </TD></TR>  
+<TR><TD>        ed    </TD><TD>   DDMM[CC]YY        </TD></TR>  
+<TR><TD>        fd    </TD><TD>   MM/DD/[CC]YY</TD></TR>  
+<TR><TD>        fe     </TD><TD>  DDMM[CC]YY</TD></TR>  
+<TR><TD>        jd   </TD><TD>    [[CC]YY]DDD   (Julian date)</TD></TR>  
+<TR><TD>        tm    </TD><TD>   HHMM[SS][{+|-}ZZZZ]</TD></TR>  
+<TR><TD>        ts   </TD><TD>    YYYYMMDDHHMM[SS][{+|-}ZZZZ]    </TD></TR>      
+<TR><TD>        ut   </TD><TD>    Day Mon dd hh:mm:ss ccyy</TD></TR>  
+<TR><TD>        yd    </TD><TD>   MMDD[CC]YY</TD></TR>  
+</TABLE>
+Table 150.2
+</p>
+
+<p>
+Solution: use a xltp (CALL) procedure within the translation 
+to transform the various date/time formats - based on the EDIFACT date/time qualifier.
+<p>
+See the <em>gc_reformatEdiDateTime</em> (which transforms EDIFACT date/time to other formats) 
+and <em>gc_reformatDateTimeToEdi</em> (which transforms Integrator date/time formats to EDIFACT date/time) procedures
+in the gen_edi_procs.tcl file for examples of EDIFACT date/time transformation procedures.
+
+<!---------
+
+2.3 Decimal comma in EDIFACT messages
+
+-------------->
+
+
+
+<h1>3. Outbound EDIFACT</h1>
+
+
+
+<p><b>
+3.1 Escaped characters:</b> The current version of the Integrator has no build-in support
+for escaped characters. When a reserved character (e.g. the segment separator ') is used
+as a value within a field the character is not automatically preceeded by an escape character 
+(normally the ? character) which specifies that the next character shouldn't be parsed
+as if it were part of the message syntax. 
+
+When creating (encoding) a field in an EDIFACT message with a value of
+<PRE>            Dr.Brown says:'hi!'</PRE>
+the result should be: (fieldvalue shown within a component)
+<PRE>            xx+227:Dr.Brown says?:?'hi!?'+zzz</PRE>
+<p>
+Since Integrator doesn't escape reserved
+characters when creating (encoding) the message 
+it is imperitive that the escaped characters be dealt
+with before the engine attempts to create (encode) the message in the translation thread. [HUBad04688]
+<p>
+Solution: usa a Code Fragment Tcl procedure that escapes any reserved EDIFACT characters.
+The procedure has to be used in combination with all translation actions that involve
+fields that may contain reserved characters.
+<p>
+See the <em>gc_escapeEDIseparators</em>  procedure
+in the gen_edi_procs.tcl file for an example.
+
+<p><b>
+3.2 Interchanges:</b>The EDIFACT standard is based on the concept of interchanges, i.e.
+batches of EDIFACT messages contained within an interchange envelope. 
+The support of EDIFACT in the Integrator is geared towards individual messages, not to interchanges. 
+
+A message generated by the Integrator starts with an UNH segment and ends with an UNT segment.
+
+<PRE>       'UNH+....'PAT+....'UNT+nnn'</PRE>
+
+To turn this message into an interchange (with 1 message), the UNG and UNZ segments
+need to be added to the message.
+
+<PRE>       UNB'+....'UNH+....'PAT+....'UNT+nnn'UNZ+...</PRE>
+
+Solution: use an OB TPS procedure that add the interchange segments.
+The Tcl code below shows the main idea behind such an approach.
+
+<PRE>   run {
+       keylget args MSGID mh
+       set msgdata [msgget $mh]      
+
+       msginsert $mh "UNB+..........." 0
+       msgappend $mh "'UNZ+...."
+
+       lappend dispList "CONTINUE $mh"
+   }
+</PRE>
+
+<br>
+See the <em>gc_buildEDIinterchange</em> procedure in the gen_edi_procs.tcl 
+file for a procedure that accomplishes the creation of an interchange.
+
+<p><b>3.3 use of CRLF:</b> 
+One of the main issues when dealing with EDIFACT is the fact that most
+systems elect to receive messages that strictly taken don't comply
+with the EDIFACT standard at all. They expect to receive the following
+data 
+<PRE>       UNH+....'
+       PAT+....'
+       UNT+nnn</PRE>
+instead of the EDIFACT-compliant message 
+<PRE>       UNH+....'PAT+....'UNT+nnn</PRE>
+
+Instead of a single ' character being used as a segment separator, these systems
+use ' and a Carriage Return (CR, ascii 13) and/or a Linefeed character (LF, ascii 10) as the
+segment separator. 
+<p>
+Solution: use an OB TPS procedure that adds CR and LF characters to the 
+standard segment separator. If messages of this type are transported using files you should
+ use the FILESET/FTP protocol in "Single Message Mode"
+to write the message.
+
+<!---------
+<p><b>
+3.4 UNT patch (counter + ref#), pre-3.7</b>
+------------>
+
+
+<p>
+Copyright 1998,2003 Health-Comm GmbH
+</BODY>
+</HTML>

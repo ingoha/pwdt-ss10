@@ -1,0 +1,117 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7>
+ Integrator - Level II Training <br>
+</h1>
+
+<h1> Module 14L: Lab: Level I refresher (F)</h1>
+
+
+
+
+
+<p>
+The goal of this lab is to provide you with a refresher of the knowledge
+acquired during the Level I training. The environment developed during this
+lab will be used as a basis for later labs as well.
+<p>
+This lab is based on the <b> FOO Deal Management System </b>.
+The specification of the DMS interface as well as some guidelines for its
+implementation are shown below. 
+<p>
+You will have to create a connection between a third-party deal entry system
+(using an FRL based format) and
+the DMS application (which uses an FRL based format).
+<UL>
+<LI>Message layout definitions have to be created and tested;
+<LI>A translation has to be created and tested;
+<LI>The connection has to be created using the network configurator.
+</UL>
+
+<h2>Configuration Overview</h2> 
+<center><img src="images/14lb_config.gif"></center>
+
+
+<p>
+
+
+According to documentation of the vendor of the deal management system (DMS), FOO Inc., Plainsville ND,
+messages of type E have the following layout:
+
+
+<PRE>Fieldname            Length Comments
+-----------------------+---+--------------------------------------
+Deal Number	          4   Unique Id of deal, rollover at 9999
+Event Date & Time        12   Timestamp
+Deal Event Type           1   'E'
+User Number               4   Of 'our' dealer
+User SWIFT Id            12
+Counterparty Number       4
+Counterparty SWIFT Id    12
+Purchase Flag             1   1=Purchase, 0=Sale
+Amount1                  20
+Currency1 ISO             3
+Amount2                  20
+Currency2 ISO             3
+ExchangeRate             10   Float; Currency1 per Currency2
+Value Date                8   MMDDYYYY
+Maturity Date             8   MMDDYYYY
+Payment Comments         10
+Brokers Id                4
+Contact                  20   Phone number of counterparty
+Reference Value           3
+</PRE>
+
+
+<p>
+<b>1.</b>Create an FRL<br>
+Create an FRL specification for the (DMS-middle office system) E-messages shown above. 
+Note that the definition as shown above is ambigious - the testing process should
+be used as a basis for the refinement of your FRL definition.
+Test your definition 
+using the <em>/tmp/class/deal_ms.dat</em>. Test your definition both at level I 
+(pre-parsed) as well as level II (parsed).
+
+<p>
+<b>2.</b>Create a Translation specification<br>
+The format used by the deal entry system (DES-front office system) is already available as <em>/tmp/class/deal_oe.frl</em>.
+Copy this file to the $HCISITEDIR/formats/fixed directory (make sure the filename in the
+destination directory contains lower case characters only). 
+Test the FRL using the <em>/tmp/class/deal_oe.dat</em> file and familiarize yourself with
+its structure.
+<br><b>2.1</b>
+Create a translation based on this format to the format used by the deal management system.
+Try to to fill all fields in the outbound message with applicable data taken from the
+source message.
+<UL>
+<LI>Don't store any value in the Deal Number, Purchase flag or Exchange Rate fields
+    during this lab, we'll determine the apprpriate values during a later lab.
+<LI>Store the 'current date and time' into the EventDateAndTime Field.
+<LI>DealDetails has an internal format of "Amount1, Currency Code1, Amount2, Currency Code2".
+    Use a table to map the currency codes: (1 USD) (31 NLG) (44 GBP) (48 PLN) (49 DEM).
+    The Amount fields contain 2 implied decimals, i.e. the value 10000 should be divided
+    by 100 when storing it in the FOO E-Message as 100.00
+<!-----------
+<LI>Calculate the value of the ExchangeRate field as being Amount1 divided by Amount2.
+---------------->
+</UL>
+
+<p>
+<b>3.</b>Build a network configuration <br>
+Create 3 protocol threads in the network configurator, 1 associated with the deal entry system (DES),
+1 with the deal management system (DMS) and 1 with an archiving system.
+Create a network configuration in which (a) "SPOTEX" messages are routed (using the translation
+created in step 2.1) from the deal entry system to the deal management system, and
+(b) all messages are routed from the deal entry system to the archive system.
+Start the engine and examine the output files.
+
+<p>
+Copyright 1998,2000 HIE Europe [130]
+</BODY>
+</HTML>

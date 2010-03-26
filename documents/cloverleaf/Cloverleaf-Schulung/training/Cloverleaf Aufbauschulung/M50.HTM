@@ -1,0 +1,195 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+ <img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 50: Tcl Procedure Stack (TPS) </h1>
+
+
+
+
+
+<p>
+The following types of Tcl procedure are used within the engine: (in order of decreasing usage)
+<UL>
+<LI>Code Fragments - Xlate thread Pre-Proc, Post-Proc en CALL 
+(See <a href="m30.htm">Module 30</a> and <a href="m42.htm">Module 42</a>)
+<LI>Tcl Procedure Stack (TPS) procedures (As discussed below and in <a href="m62.htm">Module 62</a>)
+<LI>TrxId determination procs (See <a href="m73.htm">Module 73</a>)
+</UL>
+<p>
+<center><img src="images/tps_stack.gif"><BR>
+Figure 50.1: TPS
+</center>
+<p>
+A Tcl procedure Stack (TPS, sometimes referred to as a <em>Tcl Procedure Stream</em> or
+<em>Serial Message Stack</em> (SMS))
+contains one or more Tcl procedures that process the message in a sequential fashion.
+TPS procedures typically perform an atomical transformation of the message content at 
+the message level 
+(e.g. change its layout, put all characters in lowercase, transform the content 
+between character sets).
+Individual Tcl procedures within a TPS stack are generally unaware of the presence of other
+Tcl procedures within the same stack. 
+When a TPS procedures is referenced to within the Integrator, parameters can be supplied to it in
+order to determine its behaviour. Arguments are usually provided in the network configurator.<BR>
+When TPS procedures are created is such a way that they are 
+aware of each others existance, the USERDATA metadata field associated
+with each message can be used to transport information (e.g. processing specific parameters) from one
+Tcl procedure to another.
+<p>
+TPS-Procedures are mainly used within the UPoCs available in the protocol-threads.
+Code Fragment Tcl procedures are exclusively used in the Xlate thread.
+
+<p>
+The layout of TPS Tcl procedures is as follows:
+
+
+<PRE>######################################################################
+# Name:         &lt;procName>
+# Purpose:      &lt;description>
+# UPoC type:	tps
+# Args: 	tps keyedlist containing the following keys:
+#       	MODE    run mode ("start" or "run")
+#       	MSGID   message handle
+#       	ARGS    keyed list of user-supplied arguments:
+#                       &lt;describe args here>
+
+proc procName { args } {
+    keylget args MODE mode              	;# Fetch mode
+    keylget args ARGS uarg
+    set dispList {}
+
+    switch -exact -- $mode {
+        start {
+            # Perform special init functions, executed exactly once
+            # e.g. initialize globals, databases, ..
+        }
+
+        run {
+	    # 'run' mode always has a MSGID; fetch and process it
+            keylget args MSGID mh
+
+            # change msg contents, create new messages, ...
+
+            # return dispositions, normally CONTINUE
+            lappend dispList "CONTINUE $mh"
+        }
+
+        shutdown {
+            # perform special shutdown functions, executed exactly once.
+        }
+
+        default {
+	    error "Unknown mode '$mode' in &lt;procName>"
+        }
+    }
+
+    return $dispList
+}
+</PRE>
+
+The arguments provided to the TPS procedure are accessable via the
+<em>args</em> parameter. This parameter is constructed as a keyed list which contains
+the following keys:
+<UL>
+<LI><B>ARGS</B> The user provided arguments (optional)
+<LI><B>CONTEXT</B> The name of the UPoC, context from which the Tcl procedure is executed. <b>Examples:</b>
+    <UL>
+    <LI><B>reply_gen </B> reply generation;
+    <LI><B>send_data_ok </B> data message successfully sent;
+    <LI><B>send_data_fail </B> data message delivery failed;
+    <LI><B>sms_ib_data </B> IB data message TPS;
+    <LI><B>sms_ob_data </B> OB data message TPS;
+    <LI><B>sms_ib_reply </B> IB reply message TPS;
+    <LI><B>sms_ob_reply </B> OB reply message TPS;
+    <LI><B>xlt_post </B> Xlate route post-processor;
+    <LI><B>xlt_pre </B> Xlate route pre-processor;
+    <LI><B>xlt_raw </B> Xlate raw processor.
+    </UL>
+<LI><B>MODE</B> the execution mode; <br>
+   The value of this key determines the mode of operation of the TPS procedure.
+   Its value should always be checked.
+   <UL><LI><B>start</B> initial execution (once) due to the start of the thread 
+       <LI><B>run</B> processing a message (standard mode)
+       <LI><B>shutdown</b> execution (once) due to the termination of the thread 
+       <LI><b>time</B> timed event (Used by the <a href="m90.htm">Protocol Driver UPoC (See module 90)</a>).
+   </UL>
+<LI><B>MSGID</B> message handle of the message object that is being processed
+<LI><B>VERSION</B> TPS interface version (currently: 3.0)
+</UL>
+<BR>
+The MODE and MSGID keys are always available, the usage of other keys depends on the circumstances like
+the UPoC where it is invoked from and the message that is to be processed.
+
+<h2>Dispositions</h2>
+
+A TPS Tcl procedure should return a list of <em>dispositions</em>. 
+A disposition is a definition of the way a message object is to be dealt with by the engine after
+it has been processed by a TPS procedure. depending on the procedure's return value (i.e. its disposition)
+a subsequent procedure in the TPS stack may not even be invoked.
+<p>
+<center><img src="images/tps_stack2.gif"><BR>
+Figuur 50.2: TPS Dispositions
+</center>
+<p>
+The following dispositions may be used:
+<UL>
+<LI><B>CONTINUE</B> This is the standard disposition: have any remaining procedures in the stack process the message and
+hand the message object over to the engine for further processing.
+<LI><B>ERROR</B> Abort further message processing, put the message in the error database.
+<LI><B>KILL</B> Abort further processing, the message object is destroyed and won't be put in the error database.
+<LI><B>KILLREPLY</B> Abort further processing of a Reply message and stop waiting for another reply message. 
+To be used in an IB Reply TPS procedure only. When a Reply message is killed with the
+KILL disposition insetad of KILLREPLY, the engine will wait for another Reply message.
+<LI><B>OVER</B> The message will be placd in the TPS stack associated with the <em>opposite</em> direction.
+A message object that has the OVER disposition in an IB TPS stack will be placed in the OB TPS Stack of
+the same thread. 
+A message object that has the OVER disposition in an OB TPS stack will be placed in the IB TPS Stack of
+the same thread. 
+The OVER disposition can be applied to both Data and Reply messages.
+<LI><B>PROTO</B> Skip further processing by TPS procedures in the current stack and
+hand the message object over to the protocol driver (of the <em>current</em>
+protocol thread) for immediate delivery (i.e., the message is placed at the head
+of the Outbound Post-TPS Queue).
+This disposition can be used in protocol threads only.
+<LI><B>SEND</B> Skip further processing by TPS procedures in the current stack and
+hand the message object over to the Xlate thread for further processing. 
+When the SEND disposition is used the engine will automatically set the value
+of the SKIPXLATE metadata flag to 1, indicating that the Xlate thread should skip the
+translation process and route the message directly to the destination protocol threads as listed in
+the DESTCONN metadata field.
+</UL>
+
+The following example shows the 'run'-section of a TPS procedure code 
+that transforms the contents of the entire message into uppercase characters.
+
+
+<PRE>  run {
+	    # 'run' mode always has a MSGID; fetch and process it
+            keylget args MSGID mh
+
+            set msgContent [msgget $mh]
+            set newContent [string toupper $msgContent]
+            msgset $mh $newContent 
+
+            # return CONTINUE disposition
+            lappend dispList "CONTINUE $mh"
+        }
+</PRE>
+
+<p>
+The art of programming Tcl procedures is both their development and knowing where
+to use a particular type of Tcl procedure given a particular problem. 
+See <a href="m70.htm">Module 70: a herd of UPoCs</a> for a description of all UPoCs and their usage.
+<p>
+Copyright 1998,2001 Health-Comm GmbH [15]
+</BODY>
+</HTML>

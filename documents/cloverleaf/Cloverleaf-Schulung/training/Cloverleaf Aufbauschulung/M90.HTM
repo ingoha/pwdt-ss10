@@ -1,0 +1,115 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 90: Protocol Driver UPoC </h1>
+
+
+
+
+PDLs and UPoC drivers are the most flexible protocol driver options supported by the
+engine.
+The 'UPoC driver' is one of the standard protocol types
+that can be selected in the Network Configurator.
+The functionality of the UPoC driver is based on 2 TPS-procedures, of which one will be used 
+to 'write' (deliver) a message
+and the other to 'read' (create,internalize) a message.
+<p>
+The UPoC drivers are mostly
+used in combination with the ODBC driver extensions.
+UPoC drivers are also used when an Integrator-external executable (e.g. mail or a script) 
+is responsable for the delivery/receipt of messages. 
+
+<p>
+The status of the thread that uses the UPoC driver will normally always be 'up'. The 
+Integrator engine has no way of knowing whether the code internal to the UPoC driver 
+was successfully executed. To notify the engine (and any alert scripts based on the thread's protocol status)
+that the status of the protocol connection has changed, use the <a href="m100.htm">pdsetstatus</a> command described
+in Module 100.
+
+<h2>UPoC Read TPS</h2>
+The Read TPS procedure is timer based.
+The procedure will be called once in <em>init</em> TPS-mode at thread-startup.
+It will be called in <em>time</em> TPS-mode every n seconds, where n is the duration
+of the interval as specified in the Network Configurator.
+It takes care of the reading of the message content, the creation of a message object,
+and it continues the message using the CONTINUE disposition. 
+The message is subsequently delivered from the protocol driver to the engine itself
+and will be processed by the IB-TPS stack of the thread using the UPoC driver.
+
+<p>
+The framework of a Read TPS used as a UPoC driver is as follows:
+
+<PRE>proc upoc_read { args } {
+
+    keylget args MODE mode              ;# What mode are we in
+    set dispList {}
+    ...
+     time {
+            echo UPOC_READ TIMER MODE at '[fmtclock [getclock]]'
+            set msgContent XXXXXXXXXXXXXXXXX
+            # 'read' msg, using 'own' method
+            if {[clength $msgContent] > 0} {
+                set mh [msgcreate $newMsgContent ]
+                lappend dispList "CONTINUE $mh"
+            }
+	   }
+    ...	
+}
+</PRE>
+
+<h2>UPoC Write TPS</h2>
+When a message has been processed by the OB-TPS stack of a thread using an UPoC driver,
+ the message is forwarded
+to the Write TPS of the UPoC driver. 
+The procedure will be called once in <em>init</em> TPS-mode at thread-startup.
+It will be called in <em>run</em> TPS-mode every time a message is forwarded to the
+UPoC protocol driver.
+It takes care of the delivery of the message and continues the delivered message using
+the CONTINUE disposition. This disposition results in the message being killed by the engine. 
+
+<p>
+The framework of a Write TPS used as a UPoC driver is as follows:
+
+<PRE>proc upoc_write { args } {
+
+    keylget args MODE mode              ;# What mode are we in
+    set dispList {}
+    ... 
+
+     run {
+         keylget args MSGID mh
+         set msgContents [msgget $mh]
+         # ......... $msgContents .........
+         # 'write' msg using 'own' method/protocol
+         lappend dispList "CONTINUE $mh"
+     }
+
+     ...
+}
+</PRE>
+
+<p>
+See also the additional <a href="m90v.htm">UPoC Driver examples</a>.
+
+<h2>A Word of Warning</h2>
+
+A couple of warnings when a TPS procedure is used to read or write messages from/to files:
+
+<UL>
+<LI><b>versions 3.8+</b>When reading/writing to/from files you have to specify what character encoding is (to be) used. See <a href="m54.htm">Module 54: Character Encoding</a> for details and recommendations. 
+<LI>
+</UL>
+
+
+<p>
+Copyright 2002,2003 Health-Comm GmbH
+</BODY>
+</HTML>

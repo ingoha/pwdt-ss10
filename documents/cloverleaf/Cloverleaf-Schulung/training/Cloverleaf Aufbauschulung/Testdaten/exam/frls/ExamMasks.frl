@@ -1,0 +1,65 @@
+# record layout: ExamMasks
+#
+prologue
+    who:	HCI Network User
+    date:	Fri Oct 01 10:57:35 W. Europe Daylight Time 1999
+    version:	3.0
+    type:	frl
+end_prologue
+
+#
+# Include Files
+#
+
+
+#
+# Mask declarations
+#
+
+{NAME NameMask} {TYPE mask} { FMT {
+    { FILL {} }
+    { JUST l }
+    { OFFSET {} }
+    { SFDATA {
+	{
+	    { DATATYPE ch }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {} }
+	    { WIDTH 30 }
+	} {
+	    { DATATYPE ch }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {, } }
+	    { WIDTH 30 }
+	} {
+	    { DATATYPE ch }
+	    { FILL {} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {, } }
+	    { WIDTH 1 }
+	} {
+	    { DATATYPE ch }
+	    { FILL {\x20} }
+	    { IN_VERIFY 0 }
+	    { JUST l }
+	    { OUT_VERIFY 0 }
+	    { PREFIX {, } }
+	    { WIDTH 4 }
+	}
+    }}
+    { WHEN_VERIFY f }
+    { WIDTH 40 }
+}}
+
+#
+# Field declarations
+#
+

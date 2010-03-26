@@ -1,0 +1,77 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 54L: Lab: Transliteration of a non-standard encoding</h1>
+
+
+
+
+
+<p>
+<center>
+<img src="images/caesar.gif"><BR><em>Julius Caesar</em>
+</center>
+<p>
+Julius Caesar is the most famous person of whom we know that he used
+the encryption algorithm that is nowadays referred to as 'Caesar's cipher' or 'Caesar's shift'. 
+This encryption method amounts to adding '3' to each character value, e.g.
+A is mapped to D, B is mapped to E, ..., W is mapped to Z, and Z is mapped to C.
+
+In cryptography this method is known as a shifted alphabet cipher for k=3. In modern cryptographic terms it's
+an 'S-Box'.
+<p>
+This lab requires you to create a (definitely non-standard!) transliteration of the data stream into an encrypted data stream and vive versa.
+<p>
+Note: When testing TPs procedures using the testing tool: <br>
+<em>Don't forget to check the 'initial Startup' checkbox in the testing tool if any of your
+procedures uses the 'start' section of a TPS for initialization purposes.
+</em>
+<p>
+<b>1.</b> Caesar-encrypt<BR>
+Create a TPS Procedure <em>caesarEncrypt</em> that encrypts the message
+according to Caesar's shift. Apply the shift to all 256 ASCII characters.
+Use a character table and the msgmapdata procedure.<BR>
+Test the TPS procedure with the aid of the testing tool and a random file with
+messages. <br>
+Note: The TPS-endproc <em>gc_endprocTPSshowMsg</em> in gen_debug_procs.tcl can be used
+when testing TPS procedures.
+<BR>
+<b>1.1</b> Caesar-decrypt <BR>
+Create a TPS procedure <em>caesarDecrypt</em> that decrypts a message that
+was originally encrypted according to Casear's shift.<BR>
+Test a TPS stack with the following procedures:
+<em>gc_echoMsg</em> (a standard debug procedure),
+the encryption procedure (caesarEncrypt),
+the decryption procedure (caesarDecrypt) 
+and the <em>endprocTPSshowMsg</em> end-tps-procedure.
+Test whether or not the ingoing and outgoing messages are the same.
+<BR>
+<b>1.2</b> Arguments (Optional) <BR>
+Change the encrypt and decrypt procedures so they'll be able to work with
+"user provided arguments" in the form of the keyed list {SHIFT nnn}. Instead of
+using '3' as a shift, use the shift provided by this argument. <br>
+
+&nbsp;<BR>
+Note: expr { $i % 256 } (computing a modulo) is a valid expression for both
+positive as well as negative values of i.<br>
+&nbsp; <br>
+Note: Non-trivial encryption mostly requires a lot of CPU cycles. The use of Tcl, being
+an interpreted language is not advised for encryption. 
+It is advisable to use an Integrator-external encryption
+program, executed from a Tcl script with the aid of the 'exec' command.
+<p>
+Lit.: Cryptography and Data Security, D.E.R.Denning, Add.Wesley, 1982 
+
+<p>
+Copyright 1998,2003 [70][80]
+</BODY>
+</HTML>

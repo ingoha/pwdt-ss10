@@ -1,0 +1,100 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7>
+ Integrator - Level II Training </H1>
+
+<h1> Module 73: TrxId determination Procedure </h1>
+
+
+
+
+Message routing in the Integrator is based on the ability of the Integrator to
+determine the <em>transaction Id</em> or <em>message type</em> of a message.
+<p>
+The TrxId of the following message standards can be determined by the engine
+without having to resort to a separate TrxId determination procedure:<UL>
+<LI>FRLs with a transaction Id determined by one character range;<BR>
+<LI>XML messages;
+<LI>HL7 messages;<BR>
+<LI>EDIFACT messages;<BR>
+<LI>X12 messages.<br>
+</UL>
+<p>
+The Transaction Id determination procedure determines the transaction Id if it
+can't be determined by a standard method supported by the engine. 
+It dynamically examines the data inside the message and constructs a TrxId.
+The ability to determine a TrxId by way of a procedure is an extremely powerful
+extension since the TrxId determines the way the message will be translated and routed.
+<p>
+The TrxId determination procedure is one of the most simple Tcl procedure types used
+by the engine. A message handle is provided to the procedure as its single argument.
+The value returned by the procedure is the TrxId that will be used by the engine
+for routing purposes.
+TrxId determination procedures have the following framework:
+
+
+<PRE>######################################################################
+# Name:		&lt;TrxIdDetermination proc>
+# Purpose:	Determines the TrxId of &lt;whatever>
+# UPoC type:	trxid
+# Args:		msgId	= message handle
+# Returns:	The message's transaction ID
+#
+# Notes:
+#	The message is both modify- and destroy-locked -- attempts to modify
+#	or destroy it will error out.
+#
+# 
+proc TrxIdDeterminationProc { mh } {
+
+    set msgContent [msgget $mh]
+
+    # ... Some Tcl Code to create the TrxId based on the msg contents
+
+    return $trxId				;# return it
+}
+</PRE>
+
+<h2> TrxId determination, an example</h2>
+
+A typical example of a TrxId determination procedure is the procedure shown
+below. The TrXId of messages received from the XYZ system is a combination
+of two (non adjacent) character ranges.
+
+
+<PRE>######################################################################
+# Name:		determineFRLTrxId
+# Purpose:	Determines the TrxId of an XYZ FRL message. 
+# UPoC type:	trxid
+# Args:		msgId	= message handle
+# Returns:	The message's transaction ID
+#
+# Notes:
+#	The message is both modify- and destroy-locked -- attempts to modify
+#	or destroy it will error out.
+#
+# 
+proc determineFRLTrxId { mh } {
+
+    # The TrxId of a XYZ FRL message consists of two character ranges:
+    # 0-4 and 12-13.
+
+    set trxId [msgget $mh 0 5]
+    append trxId [msgget $mh 12 2]
+
+    return $trxId				;# return it
+}
+</PRE>
+
+<p>
+See also the <a href="m73v.htm">other examples</a>.
+<p>
+Copyright 2001 Health-Comm GmbH [10]
+</BODY>
+</HTML>

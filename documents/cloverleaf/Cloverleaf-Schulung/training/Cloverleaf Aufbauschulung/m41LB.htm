@@ -1,0 +1,59 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7>
+ Integrator - Level II Training </H1>
+
+<h1> Module 41: Lab: grm and datum (F)</h1>
+
+
+
+
+
+<p>
+<b>1.</b> GRM & FRL <BR>
+Create a message object of type <em>data</em> and use msgread to set its contents equal to the first
+line of the /tmp/class/deal_oe.dat file.<BR>
+Create a grm object associated with the message just created and the message grammar "deal_oe.frl"
+(the name you've chosen may be different from "deal_oe.frl").
+Grmfetch the value of the "ValueDate" field.
+(use the fieldname as you've defined it)
+Print the VALUE of all the datum objects returned by grmfetch
+and destroy the datum, grm and msg objects. <br>
+<b>1.1</b> Add the following to the Tcl code created before. (1.) <BR>
+Grmfetch the value(s) of the "DealDetails" field
+(use the fieldname as you've defined it);
+Print the TYPE and VALUE of all datum objects.
+
+<!----- no swift yet
+
+<p>
+<b>2.</b> GRM & SWIFT <b>NOT IN CURRENT VERSION</b> <BR>
+Create a message object of type <em>data</em> and use msgread to set its contents equal to the first
+line of the /tmp/class/swift.dat file. <BR>
+Create a grm object associated with the message just created and the message grammar SWIFT
+variant "XXX"
+Grmfetch the value of the SWIFT-field
+"XXXXXXX" (using its pathname "0(0).XXXXXXXX". The pathname can be verified 
+using the testing tool).
+Print the TYPE and VALUE of all datum objects returned by grmfetch and destroy the datum, grm and msg objects. <BR>
+<b>2.1</b> Add the following to the Tcl code created before. (2.) <BR>
+Grmfetch the value(s) of the SWIFT-field "XXXXXXX" 
+(using its pathname);
+Print the TYPE and VALUE of all datum objects. <BR>
+<b>2.2</b> Add the following to the Tcl code created before. (2.) <BR>
+Use grmstore to change the value of the (sub)field XYZ to "XXX".
+Encode the GRM using grmencode and print the contents of the newly created message.<BR>
+
+-------------->
+
+<p>
+Copyright 1998,1999 HIE Europe [40]
+</BODY>
+</HTML>

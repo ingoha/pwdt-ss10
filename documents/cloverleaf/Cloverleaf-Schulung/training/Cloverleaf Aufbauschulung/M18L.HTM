@@ -1,0 +1,90 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+
+
+
+
+<h1> Module 18L: Lab Tcl and TclX </h1>
+
+<p>
+The goal of this lab is to get some experience with basic Tcl and TclX procedures
+and commands. The lab itself is focused on those parts of Tcl and TclX that
+are quite often used in the Integrator.
+<p>
+Tcl scripts can be created by any text editor (e.g. <em>NotePad</em>, <em>vi</em> or <em>hcitextedit</em>).
+You are advised to choose a unique filename for each lab (e.g. ~/lab18.2.tcl)
+<p>
+A Tcl script can be executed/interpreted in one of the following ways:
+<UL>
+<LI>Use the <em>source filename</em> command within the interpreter;
+<LI>Use the <em>hcitcl filename</em> command on the command line;
+<LI>(Unix:) Create executable Tcl files by using the following
+as the very first line in the scriptfile: <BR>
+<b>#!/hci/root3.8.2P/bin/hcitcl</b> or <b>#!/quovadx/qdx5.0P/integrator/bin/hcitcl</b> (use your current version!)<BR>
+Remember to change the filemode to executable as well (<em>chmod 774 filename</em>).
+<LI>(NT:) Create a batch file with the following content: <br>
+<b>%HCIROOT%\bin\hcitcl filename %1 %2 %3 %4 %5</b>
+</UL>
+
+<p>
+<h2> Tasks: </h2>
+
+<h3> Keyed Lists </h3>
+<b>1.</b> Write a Tcl script that reads the file /etc/passwd (on NT: %HCIROOT%/class_files/passwd.txt), creates
+a list (a tcl list, stored in a variable) of all login names and prints them in alphabetical order.
+Use the read_file, foreach, split and lsort procedures.
+
+<p>
+<b>2.</b> Write a Tcl script that reads the file /etc/passwd (on NT: %HCIROOT%/class_files/passwd.txt)
+and stores its contents in a keyed list, where the user-id field (a numeric id)
+is to be the key and the login name its associated value.
+Use the read_file, split and keyl* procedures.
+
+
+<p>
+<b>3.</b> Associate the value '6' with variable a and '0001' with variable b.
+(the qoutes aren't part of the value).
+Create a variable c whose value is a concatenation of the value of b followed by the 
+value of a. (use the <em>append</em> procedure or $b$a).
+Write an if-then-else construct that checks whether the value of the expression 4 * 4
+equals the content of the variable c. Explain why 4 * 4 is <b>unequal</b> to 00016.
+
+<!----
+
+<p>
+<b>4.</b> Use the <em>lgets</em> procedure (see tclhelp) to read the contents of the file 
+<a href="keyl18.htm">/tmp/class/keyl18.dat</a>. Use the <em>open</em> function to
+obtain a filehandle.
+This file contains a keyed list with productnames, order numbers and the amount 
+of products that are currently in stock.
+Print the names of the products (and the order number of the product) in alphabetical order.
+Use the <em>catch</em> Tcl procedure to catch possible errors during the opening and reading
+of the file.
+
+<p>
+<b>4.</b> Change the script (task 3) so it will be able to deal with the following errors:
+<BR>
+-The file doesn't exist;<BR>
+-The keyed list somehow doesn't contain certain keys.<BR>
+Use the catch procedure and test your solution with the aid of the file
+/tmp/class/keyl18err.dat
+---------------------------->
+
+
+
+<p>
+Copyright 2002,2003 Health-Comm GmbH [180][105[125][135][70][80][130]
+
+
+</BODY>
+</HTML>

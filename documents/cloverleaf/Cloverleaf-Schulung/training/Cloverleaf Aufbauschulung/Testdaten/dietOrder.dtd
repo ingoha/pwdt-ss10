@@ -1,0 +1,42 @@
+<!ELEMENT dietOrder (envelope? , dietician? , patient* )>
+<!ELEMENT envelope (sent? , reference)>
+<!ELEMENT dietician (id , nm , tel? , addr? )>
+<!ELEMENT patient (id , nm , tel? , dob? , diet , clinicalObs? )>
+<!ELEMENT diet (dietElement , dietInstruction? )>
+<!ELEMENT dietInstruction (tray* , text* )>
+<!ELEMENT clinicalObs (allergy? , bloodType? , weight? )>
+
+<!ELEMENT allergy (code* )>
+<!ELEMENT bloodType (code )>
+<!ELEMENT dietElement (code* )>
+<!ELEMENT dob (ts )>
+<!ELEMENT id (code+ )>
+<!ELEMENT reference (code+ )>
+<!ELEMENT sent (ts )>
+<!ELEMENT tel (url* )>
+<!ELEMENT weight (code )>
+
+<!ELEMENT addr (STR , HNR? , ZIP , CTY)>
+<!ATTLIST addr		USE	CDATA	#IMPLIED >
+<!ELEMENT STR (#PCDATA )>
+<!ELEMENT ZIP (#PCDATA )>
+<!ELEMENT HNR (#PCDATA )>
+<!ELEMENT CTY (#PCDATA )>
+<!ELEMENT code (#PCDATA )>
+<!ATTLIST code		type	CDATA	#IMPLIED
+			unit	CDATA	#IMPLIED >
+<!ELEMENT nm (GIV+, PFX* , FAM+ , SFX?)>
+<!ELEMENT PFX (#PCDATA )>
+<!ATTLIST PFX		Q	CDATA	#IMPLIED >
+<!ELEMENT GIV (#PCDATA )>
+<!ATTLIST GIV		Q	CDATA	#IMPLIED >
+<!ELEMENT FAM (#PCDATA )>
+<!ATTLIST FAM		Q	CDATA	#IMPLIED >
+<!ELEMENT SFX (#PCDATA )>
+<!ATTLIST SFX		Q	CDATA	#IMPLIED >
+<!ELEMENT text (#PCDATA )>
+<!ELEMENT tray (#PCDATA )>
+<!ELEMENT ts (#PCDATA )>
+<!ELEMENT url (#PCDATA )>
+<!ATTLIST url		use	CDATA	#IMPLIED >
+

@@ -1,0 +1,83 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7>
+ Integrator </H1>
+
+<h1> Module 300: The principles of message interfacing</h1>
+
+
+
+
+
+following aspects of message interfacing:
+<UL>
+<LI>tight and losse coupling
+<LI>proprietary and standard message structure
+</UL>
+
+<h2>Tight and loose coupling</h2>
+
+there are multiple ways to integrate different products. 
+
+<p> 
+<center><img src="images/vendor_int2.gif"><BR>
+Figure 300.1 tight coupling 
+</center>
+<p> 
+<center><img src="images/vendor_int.gif"><BR>
+Figure 300.2 loose coupling 
+</center>
+
+<h2>Messaging</h2>
+
+the data model (whether in the form of a ER or an OO model)
+used by a partiocular application is based on the 
+environment where the application is used, i.e. it is a vendors model
+of 'reality'.
+<p>
+the data model is refelected in the vendors' implementation in the form
+of relational tables or OO classes
+<p>
+proprietary message structures created by independent vendors are mostly based
+on the structure of tables or classes used in the implementation. This is basically
+a watered down version of the underlying data model.
+<p>
+independent message standards (like HL7/X12/DICOM) are based on a data model
+created by the applicable standardization body. This data model is based
+on the environment where messaging is used, i.e. it is a standardization body's model
+of 'reality'. This model does not just describe the message structure but the (finite) state 
+transition diagram as well. (Events and message types)
+<p>
+a state transition model leads to the concept of <em>events</em>. 
+
+The message transmission model can be either <em>event triggered</em> (aka push) or 
+<em>query/reply</em> (aka pull).
+
+The transaction model can be either <em>delta</em>, in which case a message only contains
+an update, or <em>actual</em>, in which case the entirely new situation/status is reported.
+<p>
+since both the vendor's data model as well as the standardization body's data model are
+based on the same 'reality', a vendor should be able to create a mapping bewteen the tables
+or objects used in its implementation and the standardized messages.
+
+<p>
+
+message standards generally support repeating structures to allow for unlimited 1-n relations.
+In FRL structures assumptions have to made as to the number of repititions.
+
+<p>
+edifact extensively uses <em>qualifiers</em> to determine the exact semantics of a field, 
+allowing the same syntax to be used for various semantic contents. In HL7 this same concept
+was introduced in version 2.3, notably in the XPN field type.
+
+<p>
+Copyright 1999 HIE Europe
+</BODY>
+</HTML>

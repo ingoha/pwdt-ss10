@@ -1,0 +1,162 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 90: Protocol Driver UPoC, Examples </h1>
+
+
+
+
+The following procedure is a UPoC driver example (Write TPS-proc).
+The outbound messages are stored in a file and subsequently sent by e-mail.
+
+
+<PRE>###############################################################################
+# upoc_mail_out - Outbound upoc driver.
+#
+# The msg to be mailed to the remote system should look like this:
+#    #BATCHSTART#
+#    &lt;msg 1>
+#    ..
+#    &lt;msg 25>
+#    #BATCHEND
+# 
+
+proc upoc_mail_out { args } {
+
+    keylget args MODE mode              ;# What mode are we in
+    global nbrOfMsgs
+    
+    set dispList {}
+
+    switch -exact -- $mode {
+	start {
+	    set nbrOfMsgs 0
+	}
+
+	run {
+	    keylget args MSGID mh
+            
+            set msg [msgget $mh]
+            # Encrypt the message with ROT-13
+            set encr_msg [ encryptROT13 $msg ]
+
+            # Add ancrypted message to intermediate file
+            set mailfile "/data/mailmsgs.out"
+            set fh [ open $mailfile a+ ]
+            # next line required in version 3.8 or later
+            reconfigure $fh -translation {binary binary} -encoding iso8859-1
+            if { $nbrOfMsgs == 0 } {
+              puts $fh "Integrator messages sent on [fmtclock [getclock]] \n"
+              puts $fh "#BATCHSTART#\n"
+            }
+            puts $fh $encr_msg
+            puts $fh "\n"
+            incr nbrOfMsgs
+            if { $nbrOfMsgs >=25 } {
+              puts $fh "#BATCHEND#\n"
+            }
+            close $fh
+            
+            # If there are 25 or more msgs in the file, e-mail
+            # to the remote system.
+            if { $nbrOfMsgs >= 25 } {
+              exec mail cryptmail@ico.twelvetrees.co.uk &lt; $mailfile 
+              unlink $mailfile
+              set nbrOfMsgs 0
+            }
+ 
+	    lappend dispList "CONTINUE $mh"
+	}
+
+	time {
+ 	}
+
+	default {
+	    echo "Unknown mode in upoc_mail_out: '$mode'"
+	}
+    }
+
+    return $dispList
+}
+</PRE>
+
+The TPS-procedure shown below is a neat example of a UPoC driver.
+The functionality of the UPoC driver shown below is rather nonsensical but it
+shows the use of the <em>start</em>, <em>run</em> and <em>time</em> TPS-mode sections
+of the TPS procedure.
+<p>
+
+<PRE>proc upoc_test { args } {
+
+    keylget args MODE mode              ;# What mode are we in
+    global fp
+
+    set dispList {}
+
+    switch -exact -- $mode {
+	start {
+	    set fp [open /etc/hosts r]
+	}
+
+	run {
+            # writing a message 
+	    keylget args MSGID mh
+	    echo UPOC_TEST RUN MODE at '[fmtclock [getclock]]'
+	    echo MSG='[msgget $mh]'
+	    lappend dispList "CONTINUE $mh"
+	}
+
+	time {
+            # reading a message at timed intervals
+	    keylget args MSGID mh
+	    echo UPOC_TEST TIMER MODE at '[fmtclock [getclock]]'
+	    set mh [msgcreate [gets $fp]]
+	    if {[info exists mh]} {
+		lappend dispList "CONTINUE $mh"
+	    }
+	}
+
+	default {
+	    echo "Unknown mode in upoc_test: '$mode'"
+	}
+    }
+    return $dispList
+}
+</PRE>
+(The above example was created by Scott McManis)
+<p>
+The UPoC driver can also be used to generate polling messages at regular intervals.
+If the following UPoC driver is used and configured for an interval of 15 seconds,
+a polling message (if routed correctly) will be sent to the system that is to be polled
+every 15 seconds.
+
+
+<PRE>proc generate_poll_msg { args } {
+     ...
+
+     time {
+          set mh [msgcreate "POLLING MSG"]
+          lappend dispList "CONTINUE $mh"
+     }
+
+     ...
+}
+</PRE>
+
+
+<p>
+Note on portability: the build-in Tcl procedure <em>windows_platform</em> (which returns 1
+for Windows, 0 for Unix) can be used to determine the platform. 
+This is especially useful when the UPoC driver has to use different commands based on whether
+the platform is Windows NT or Unix.
+
+</BODY>
+</HTML>

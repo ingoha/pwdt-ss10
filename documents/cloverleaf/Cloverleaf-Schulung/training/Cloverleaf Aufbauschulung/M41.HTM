@@ -1,0 +1,489 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 41: Generic Record Manager and Translation Pseudo Machine </h1>
+
+
+
+
+
+<h2> Generic Record Manager - GRM </h2>
+
+The <em>Generic Record Manager Object</em> (GRM) is responsable
+for the parsing and encoding of the message content according to its message format
+(i.e. its parsing or encoding rules/its grammar).
+
+The GRM Tcl procedures allow for data to be parsed, fields to be extracted from a message
+and the value of a field to be changed.
+GRM Objects allow for fields to be accessed by their symbolic identifier (a.k.a. paths).
+The symbolic identifiers used are part of the naming conmvention used by the Integrator
+for message objects and parts thereof. 
+A field can be uniquely identified by its name (FRL/VRL) or its path (XML/HRL/HL7/EDI/X12/SWIFT).
+
+<p>
+<center><img src="images/grm.gif"><BR>&nbsp; <BR>
+<em><b>Fig. 41.1 Grm handle</b></em></center>
+<p>
+GRM procedures are mostly used in TPS procedures. The process of parsing a message can be 
+CPU intensive which is why, in case a simple manipulation or data fetch is required,
+the data is often accessed directly. 
+An example of the use of the GRM would be the fetching of a field-content within
+an IB-TPS in order to determine whether or not to filter (i.e. kill) a message.
+<p>
+In order to use the GRM Tcl extensions, one should be familiar with the following concepts:
+<UL>
+<LI><b>Message Formats</b> <br>
+    Basic knowledge of the supported message formats as well as the naming convention used
+    to identify the components within 
+    these message formats. The testing tool can be of assistance
+    when the symbolic identification (path) of a message component is unclear.
+<LI><b>Message and Datum objects</b> <br>
+    The creation and manipulation of Message objects and Datum Objects.
+<LI><b>Site and Root</b> <br>
+    Before any of the GRM procedures can be used, the root and site (shell) environment variables 
+    should be set as well as their equivalents within the Tcl interpreter.
+    The global variables in the Tcl interpreter can be set by calling the 
+    <b>setHciDirs</b> procedure.
+</UL>
+
+<P>
+A considerable number of functions can be used to manipulate GRM objects. 
+Use the <em>info command grm*</em> command in the hcitcl interpreter to get a full list of available
+message procedures. The following procedures are available in version 3.7.1P:
+<p>
+hcitcl>info command grm*<br>
+grmbulkcopy grmcreate grmdestroy grmencode grmfetch grmlist grmpathinfo grmreset grmstore grmtimeset
+
+<p>
+The list below contains a description and the usage of the GRM functions.
+The flag that preceeds the procedure name (**,* or --) indicates
+the frequency of use of the procedure (frequently, regularly, almost never)
+and hence its importance.
+
+
+<P>
+<TABLE>
+<TR><TD bgcolor=#999999 valign="top">
+** </TD><TD> <B>grmcreate ?-msg mh? ?-warn var? type args <br>
+                grmcreate ?-msg mh? ?-warn var? {frl | vrl | hrl } <em>filename</em> <BR>
+                grmcreate ?-msg mh? ?-warn var? {hl7 | edifact | x12 | swift} <em>version variant msgType</em><BR>
+                grmcreate ?-msg mh? ?-warn var? xml_1_0 <em>package xmlname</em> <br>
+            </B><BR>
+Purpose: This function creates a new GRM object and returns its grm handle.
+A GRM object is always associated with a message grammar (FRL, VRL, XML, HRL, HL7/EDI/X12 or a variant thereof). 
+If a message handle is provided using the optional parameter -msg, the contents associated
+with the message object will be parsed according to the message grammar.
+Any warnings (i.e. non-fatal errors) that occur during the parsing
+of the message content will be put in the variable of which the name
+can be supplied using the optional -warn parameter.
+The contents of a message can be retrieved by the symbolic identifiers (path names) of
+the components it is comprised of once a GRM has been associated with 
+both a grammar and a message content.
+The variant name {} indicates a standard version. The msgType parameter
+can be specified as being {}, in which case <b>standard</b> trxId determination
+will be used in order to determine the message type that is to be used when parsing the message.
+<BR>
+Notes: This function is mostly used in IB-TPS/OB-TPS procedures to fetch/update the value
+of (sub-)fields. A grm object has to be associated with both a message as well as a grammar.
+Use either <em>grmcreate -msg</em> or <em>grmcreate</em> in combination with <em>grmreset</em>.<BR>
+Examples:
+
+<PRE>hcitcl>set gh [grmcreate -msg $mh -warn w vrl example.vrl] ; echo $w
+{LABNUM: not valid ai data}{TIME: not valid ts data}
+hcitcl>set gh [grmcreate vrl example.vrl] ; echo $gh
+grm0
+hcitcl>grmreset -warn w $gh $mh ; echo $w
+{LABNUM: not valid ai data}{TIME: not valid ts data}
+hcitcl>set gh [grmcreate -msg $mh swift 97.9 {} 521]
+hcitcl>set gh [grmcreate hl7 2.2 own_variant_name ADT_A08] 
+hcitcl>set gh [grmcreate -msg $mh2 hl7 2.2 {} DFT_P03 ] ;# 2.2 standard
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+** </TD><TD> <B>grmdestroy grmId ?grmId...? </B><BR>
+Purpose: This function destroys a GRM object. The generic record manager object and 
+         its GRM handle are removed from the interpreter.
+Because of the fact that the interpreter itself is unable to perform
+garbage collection when it comes to GRM objects you'll have to make
+sure that all Tcl procedures that create GRM objects also destroy these GRM objects.
+Any 'leakage' can be detected by testing the Tcl procedures with the aid of the testing tool. <BR>
+         Destroying a GRM object has no effect whatsoever on any messages that may 
+         have been parsed and/or encoded by it.<BR>
+Notes: This function is mostly used as one of the last ones in a Tcl procedure
+       in which GRM objects were created earlier.<BR>
+Examples:
+
+<PRE>hcitcl>grmdestroy grm0 grm1
+hcitcl>grmlist
+grm5 grm7 grm11
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+*- </TD><TD> <B>grmfetch ?-warn var? grmId fieldName</B><BR>
+Purpose: This function returns a list of datum objects containg 
+the value of one or more (sub)fields given
+their symbolic identifier(s).
+Each datum object returned contains the value of a subfield (FRL,VRL,HRL,Swift)
+or subcomponent (HL7,EDI). An HL7-datum object with value "" denotes the 'active null' value. <BR>
+Notes: This function returns datum handles, not strings. <br>
+Examples:
+
+<PRE>hcitcl>set dhList [grmfetch $gh {PatientName.[0,1]} ]  ;  \
+       foreach dh $dhList { datget $dh VALUE ; datdestroy $dh }  
+hcitcl>set dhList [grmfetch $gh {0(0).EVN(0).00107} ] \
+       ;# all subfields of field 00107
+hcitcl>set dhList [grmfetch $gh {0(0).EVN(0).00107.[1,2,0]} ]
+hcitcl>set dhList [grmfetch $gh {4.2(0).87D.[1]}]
+hcitcl>grmfetch $gh NONSENSE_FIELD
+Error: Unable to resolve address "NONSENSE_FIELD"
+
+# Example of retrieving a field in an HRL by means of grmcreate and grmfetch:
+set gh [grmcreate -msg $mh hrl example.hrl]
+set dhList [grmfetch $gh header(0).section1(0).customernumber]
+foreach dh $dhList { echo [datget $dh VALUE] ; datdestroy $dh }  
+grmdestroy $gh
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+*- </TD><TD> <B>grmstore -list grmId fieldName type arg <BR>
+                grmstore grmId fieldName type arg ?arg...? </B><BR>
+Purpose: This function changes (part of) the data associated with the GRM object
+by specifying both the symbolic identifiers (field/path names)
+of the fields of which the contents are to be changed as well as the new content.
+When the -list option is used, arg is interpreted as a list of values, otherwise the values are
+interpreted as being individually listed. <BR>
+The <em>type</em> parameter determines the default element-type in the value list:
+<UL>
+<LI>-c &nbsp;&nbsp; character string
+<LI>-d &nbsp;&nbsp; datum handle
+<LI>-v &nbsp;&nbsp; special value string (<em>null</em> = active null)
+</UL>
+Examples:
+
+<PRE># default=character, store 3 individual subfields.
+grmstore $grmIdHl7 0(0).PID(0).0041 c Johnson Jack J. 
+# default=character, store 1 Tcl-list that contains 3 values.
+grmstore -list $grmIdHl7 0(0).PID(0).0041 c "Johnson Jack J." 
+# default=character, override for datum handle and special value string.
+set dh [ datcreate Jack ]
+grmstore $grmIdHl7 0(0).PID(0).0041 c Johnson -d $dh -v null 
+;
+# default=datum handle, store 2 individual subfields.
+grmstore $grmIdFRL PatientName d $dh1 $dh2
+# default=datum handle, store 1 Tcl-list that contains 2 values.
+grmstore -list $grmIdFRL {PatientName.[0,1]} d "$dh1 $dh2"
+;
+# default=character
+grmstore $gh {4.2(0).33T.[0]} c "USD"
+# the -list option can be used to store multiple parts
+grmstore -list $gh {4.2(0).88D.[0]} c "P1 P2 P3"
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+*- </TD><TD> <B>grmencode ?-warn var? grmId</B><BR>
+Purpose: This function encodes the data associated with a GRM object according to
+the message grammar associated with the GRM. 
+The result of this function is the handle of the newly created message object.
+The process of encoding is the 
+exact opposite of parsing: the data is encoded to form a new message.
+The newly created message has only limited metadata associated with it.<BR>
+Notes: This function is quite often combined with the msgcopy function in
+order to preserve the metadata information of a message of which the
+contents have been updated by grmstore and grmencode.<BR>
+Examples:
+
+<PRE>set mh [grmencode -warn w $grmId]
+</PRE>
+The newly created message object quite often is a 'replacement'
+for a message object that already exists. If the metadata of the to be replaced message
+is to be preserved, msgcopy can be used as follows:
+
+<PRE># message (handle $mh) already exists and is to be updated
+set gh [grmcreate -msg $mh ........ ]
+# update individual fields using grmfetch/grmstore..
+grmstore $gh ...........
+# encode..
+set mhNew [grmencode $gh]
+# copy 'contents' of this new message to the old message object. 
+# (the old message object has the correct metadata associated with it)
+msgset $mh [msgget $mhNew]  
+# or: set mh2 [msgcopy $mh] ; msgset $mh2 [msgget $mhNew]
+#     -this way both msg object $mh and $mh2 are associated
+#      with correct metadata.
+msgdestroy $mhNew 
+</PRE>
+</TD></TR>
+
+
+<!---------------
+<TR><TD bgcolor=#999999 valign="top">
+-- </TD><TD> <B>grmbulkcopy ?-warn var? destGrmId srcGrmId</B><BR>
+Purpose: This function copies the values of all message 
+fields accessable via srcGrmId to fields accessable via destGrmId. 
+Its functionality can be compared to the functionality of the BULKCOPY translation
+action. The content of a field will only be copied if
+the exact same symbolic identifier (Pathname, field name) is used by the grammars
+associated with the GRM objects. 
+If the -warn option is used to supply the name of a variable, the variable will contain
+any warn messages generated during the bulkcopy operation. <br>
+Notes: When used to copy message contents between different HL7 versions, 
+Integrator will attempt to automatically map the field identifiers, which may differ
+between HL7 versions.<BR>
+Examples:
+
+<PRE>grmbulkcopy -warn w $grmIdHl7dest $grmIdHl7src
+grmbulkopy -warn w $grmIdFRLdest $grmIdFRLsrc
+</PRE>
+</TD></TR>
+------------------>
+
+
+<TR><TD bgcolor=#999999 valign="top">
+-- </TD><TD> <B>grmlist</B><BR>
+Purpose: This function returns a list of available GRM handles within the interpreter. <BR>
+Examples:
+
+<PRE>hcitcl>grmlist
+grm0 grm1 grm2 grm3 grm4
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+* </TD><TD> <B>grmreset ?-warn var? grmId ?msgId?</B><BR>
+Purpose: This function associates a grm object with a message object.
+The contents of the message can be accessed using the GRM as soon as the message
+object has been associated with the GRM. The <em>grammar</em> associated with
+the GRM object (SWIFT,HL7,FRL...) at the time of its creation is not changed when
+grmreset is used. <br>
+Examples:
+
+<PRE>
+# ..have existing grm object parse contents associated with a new messahe handle.
+grmreset $grmHandleHRL $newMH
+</PRE>
+</TD></TR>
+
+</TABLE>
+<p>
+A generic example of the various procedures needed in order to access the value
+of a field in a message:
+
+<PRE>
+# create (or use) the message object containing the message string
+set mh [msgcreate -recover "ADMSmith,P     20, Penny Lane       London W1 ZPV"]
+
+# create a grm object, associate with above message and an FRL syntax
+set gh [grmcreate -msg $mh frl ourexample.frl]
+# use the grmhandle and the pathname of a subfield to fetch its value
+set dh [grmfetch $gh {PatientName.[0]}]
+# access the value associated with the datum object
+echo Name=[datget $dh VALUE]
+# destroy handles
+datdestroy $dh
+grmdestroy $gh
+</PRE>
+<p>
+See also the <a href="m41v.htm">GRM Supporting Procedures</a>.
+
+<h2> Xlate Pseudo Machine </h2>
+
+The Translation Pseudo Machine (XPM) object is the heart 
+of the translating mechanism within the Integrator.
+The behaviour of XPM objects is determined by translation specifications (.xlt)
+created using the translation specification GUI.
+XPM features can be used by Tcl procedures that are used to implement non-standard mapping
+algorithms.
+<p>
+<center><img src="images/xpm2.gif"><BR>&nbsp; <BR>
+<em><b>Fig. 41.2 Xpm object & handle</b></em></center>
+<p>
+An XPM-object is associated with two GRM objects: one in order to be able to access
+fields (i.e. fetch) 
+in the inbound message and one in order to access fields in the outbound message (i.e. store).
+<p>
+The XPM object <b>can't</b> be destroyed by a Tcl procedure, it is created
+and destroyed by the engine itself. XPM objects can only be used in Tcl procedures
+of type <em>Code Fragment</em> (Xlt Pre-Proc, Xlt CALL, Xlt Post Proc).
+An XPM handle is provided to these procedures in the form of a parameter.
+
+The XPM object is not available in the command line interpreter which is why
+Tcl procedures that use XPM objects have to be tested using the testing tool.
+
+<P>
+A considerable number of functions can be used to manipulate XPM objects. 
+Use the <em>info command grm*</em> command in the hcitcl interpreter to get a full list of available
+message procedures. The following procedures are available in version 3.8.1P: <BR>
+hcitcl>info command xpm*<br>
+xpmdispose xpmdump xpmencode xpmerror 
+xpmfetch xpmmetaget xpmmetaset xpmstore xpmunparse
+
+<p>
+The list below contains a description and the usage of the XPM functions.
+The flag that preceeds the procedure name (**,* or --) indicates
+the frequency of use of the procedure (frequently, regularly, almost never)
+and hence its importance.
+
+
+<p>
+<TABLE>
+<TR><TD bgcolor=#999999 valign="top">
+* </TD><TD> <B>xpmfetch ?-warn var? xpmId field</B><BR>
+Purpose: This function fetches the content of one or more fields using the XPM
+object and the symbolic identifier of the field(s).
+The functionality of this function can be compared to that of grmfetch, with
+the added functionality that temporary variables (@) and fields in the
+outbound message (~) can be accessed as well.
+This fuction returns a list of datum handles.<Br>
+Examples:
+
+<PRE>>set dh [xpmfetch -warn w $xlateId {NAME.[1]} ]
+>set dh1 [xpmfetch $xlateId ~0(0).PID(0).00106] ;# fetch of an output veld
+>set dh2 [xpmfetch $xlateId @temp] ;# fetch temporary field
+#Note: returns datum handles, not strings. Use datget to get string values.
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+** </TD><TD> <B>xpmstore ?-list? xpmId field type args ?...?</B><BR>
+Purpose: This function changes the content of a field in the outbound message
+using a XPM object and the symbolic identifier of the field.
+The functionality of this function can be compared to that of grmstore, with
+the added functionality that the content of temporary variables (@) 
+can be changed as well. <BR>
+Examples:
+
+<PRE>xpmstore $xlateId 0(0).PID(0).0041 c Johnson Jack J. 
+xpmstore -list $xlateId 0(0).PID(0).0041 c "Johnson Jack J." 
+set dh [ datcreate Jack ]
+xpmstore $xlateId 0(0).PID(0).0041 c Johnson -d $dh -v null 
+;
+xpmstore $xlateId PatientName d $dh1 $dh2
+xpmstore -list $xlateId {PatientName.[0,1]} d "$dh1 $dh2"
+;
+xpmstore $xlateId @temp c Foo
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+-- </TD><TD> <B>xpmmetaget ?-ro | -rw | -all? xpmId ?key?</B><BR>
+Purpose: This function returns (part of) the metadata associated with the 
+(to be encoded) outbound message associated with the XPM object. 
+The functionality of this function can be compared to that of msgmetaget. <br>
+Note: Any metadata associated with the inbound message will be automatically
+copied to the outbound message. <br>
+Examples: See msgmetaget.
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+-- </TD><TD> <B>xpmmetaset xpmId key value ?key2 value2 ...?</B><BR>
+Purpose: This function changes the value of a metadata field associated with the 
+(to be encoded) outbound message associated with the XPM object. 
+The functionality of this function can be compared to that of msgmetaset. <br>
+Notes: Mainly used to change the value of the DESTCONN metadata field in order
+to change its routing or to change the value of SEPCHARS in order to generate
+a message with non-default separators.
+See also <a href="m74.htm">Module 74: Routing Messages</a>. <BR>
+Note: Any metadata associated with the inbound message will be automatically
+copied to the outbound message. <br>
+Examples: See msgmetaset.
+
+<PRE># Change the SEPCHARS metadata field, the message 
+# will be encoded using these new separators.
+keylset sepchars FIELD #
+keylset sepchars SEGMENT \x0d
+xpmmetaset $xlateId SEPCHARS $sepchars
+# userdata metadata example, without preserving current options
+xpmmetaset $xlateId USERDATA {MYKEY $myvalue} 
+</PRE>
+</TD></TR>
+
+<!---
+<TR><TD bgcolor=#999999 valign="top">
+-- </TD><TD> <B>xpmencode ?-warn var? xpmId</B><BR>
+Purpose: This function encodes the contents of the outbound message object 
+associated with the XPM object. This function returns the message handle of
+the newly created message object. 
+The functionality of this function can be compared to that of grmencode. 
+The encoding process doesn't affect the XPM object at all.
+<br>
+Notes: Message objects created by this function will have to be subsequently either:<BR>
+a) destroyed by msgdestroy; <BR>
+b) handed over to the engine for further processing by using xmpdispose.
+<BR>
+Examples: See grmencode.
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+-- </TD><TD> <B>xpmdispose xpmId disp msgId ?...?</B><BR>
+Purpose: This function adds a message object to the list of message dispositions.
+The <em>disp</em> parameter should contain one of the following:
+continue, kill, over, proto, send. 
+Once the message handle of a message object has been added to the list of dispositions 
+the message object can't
+be accessed any more.<BR>
+Notes: This function is always used in combination with xpmencode. It hands 
+the message, created by xpmencode, over 
+to the Integrator engine itself for further processing and delivery.
+<BR>
+Examples:
+
+<PRE>>set mh [ xpmencode -warn warnMsgs $xpmId ] ;# encode of outbound msg
+>xpmdispose $xpmId continue $mh
+</PRE>
+The xpmencode and xpmdispose command can be used to conditionally
+CONTINUE/SEND a message,
+possibly multiple times within an iterate loop.
+Here is an example from within a CALL statement.
+
+<PRE>if  { [lindex $xlateInVals 0] != "" } {
+      set mh [xpmencode $xlateId]
+      xpmdispose $xlateId continue $mh
+    }
+# This is the last action of an Iterate loop that is used to
+# support translation of a variable length input message.
+</PRE>
+</TD></TR>
+-->
+
+<TR><TD bgcolor=#999999 valign="top">
+* </TD><TD> <B>xpmerror xpmId severity ErrMessage</B><BR>
+Purpose: This function generates an XPM-error. The resulting behaviour of
+the translation thread and the engine itself are determined by the <em>severity</em> parameter.
+<UL>
+<LI><b>action</b> errors are dealt with according to the XLT statement error control value.
+The message will be put in the error database as well as the accompanying <em>ErrMessage</em>.
+<LI><b>curdetail</b> aborts the current translation (current route detail) of the inbound message.
+The message is not put in the database.
+<LI><b>alldetail</b> aborts all translations of the inbound message.
+The message is not put in the database.
+</UL>
+Notes: This function is mostly used to abort an ongoing translation based on the
+contents of the message. in the Integrator versions prior to 3.8 this function should always be used in combination with <em>catch</em>
+since it generates a runtime Tcl-error when called. <br>
+
+Examples:
+<PRE>xpmerror $xpmId action "Check X failed"
+</PRE>
+</TD></TR>
+
+
+</TABLE>
+
+
+<p>
+Copyright 2002 Health-Comm GmbH [30][25][35][30]
+</BODY>
+</HTML>

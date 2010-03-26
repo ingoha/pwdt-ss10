@@ -1,0 +1,145 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 10: Integrator System Architecture </h1>
+
+
+
+
+
+<p>
+This module contains a review of the system architecture of the Integrator.
+The system architecture was introduced and discussed during the level I training.
+A thorough knowledge of the system's architecture is necessary if
+one wants to use the scripting features of the Integrator.
+The system architecture can be described in terms of processes, threads and
+the flow of messages. 
+Note that the majority of the figures shown below are also included in appendix F.
+<p>
+<h2>Messageflow</h2>
+<center><img src="images/arch1.gif"><BR>
+Figure 10.1 Structure of the engine
+</center>
+<p>
+The engine, i.e. the core of the message broker is responsable for:
+<UL>
+<LI>The management of messages within the engine;
+<LI>The receipt/delivery of the messages (at the OSI Session layer);
+<LI>The translation of messages (at the OSI Presentation layer);
+    <UL>
+    <LI>The manipulation of Flat Record fields and subfields;
+    <LI>The manipulation of HL7, EDIFact, X12 and SWIFT fields;
+    <LI>The manipulation of XML attributes and values;
+    <LI>The conversion of data types (string, date/time types, numeric, ...).
+    </UL>
+<LI>Store-and-forwarding of messages, Queues;
+<LI>The creation of message logs (audit-trail);
+<LI>Ensuring fault tolerance.
+</UL>
+
+
+<p>
+<h2>Process architecture</h2>
+<center><img src="images/proc.gif"><BR>
+Figure 10.2 an Integrator process 
+</center>
+<p>
+The above figure shows an Integrator process, including the threads it is comprised of. 
+The engine consists of 1 or more Integrator processes.
+Each process contains at least 3 threads: a command thread, a translation thread
+and a protocol thread. The number of protocol threads may vary, although it is advisable
+not to place more than 7 or 8 protocol threads within the same process for performance reasons.
+<UL><LI>
+The <b>command thread</b> takes care of the communication between the Integrator process 
+and the <em>hcicmd</em> utility. The hcicmd utility is used to transfer configuration
+information and runtime commands (e.g. from the GUIs) to the engine processes.
+<LI>
+Each <b>protocol thread</b> is associated with an external system.
+A connection can be either inbound only, outbound only or bidirectional.
+Protocol threads are solely responsable for the receipt and delivery of messages
+(i.e. at the OSI session layer).
+<LI>
+The <b>translation thread</b> is responsable (at the OSI Presentation layer) 
+for the translation and routing of messages.
+There is exactly 1 translation thread in each process. 
+All messages are routed and translated by the translation thread in order to ensure
+the in-sequence processing and delivery of messages.
+</UL>
+
+<p>
+<h2>Messagflow</h2>
+<center><img src="images/msgfl_d.gif"><BR>
+Figure 10.3 Messageflow of a data message 
+</center>
+<p>
+The above figure shows the standard messageflow of a data message. 
+Inbound messages are subsequently processed by the IB protocol thread, the translation thread,
+and the OB protocol thread. 
+The above figure shows the messageflow of a message that is processed by 2 processes.
+The message sent by Conn_A is received by the protocol thread Proto_A, forwarded to the
+translation thread Xlate_1 and routed to the protocol thread Proto_C.
+This protocol thread takes care of the delivery of the message to the external system
+Conn_C.
+<h3>Message <em>Type</em> and Message <em>Class</em> </h3>
+Both the message type and message class are characteristics of a message.
+The message <em>Class</em> indicates whether the message is being processed 
+internally by the engine or not.
+Messages 1 and 4 in figure 10.3 are of message class <em>protocol</em>, exchanged via
+one of the supported transport protocols supported by the engine.
+Messages 2 and 3 are of message class <em>engine</em>. The exchange of messages of
+this type takes place via the <em>Interthread Communication Library - ICL </em> 
+(an in-memory data transfer using a shared memory region).
+<p>
+The message <em>Type</em> indicates whether a message is of type <em>Data</em> or
+<em>Reply</em>. All messages shown in figure 10.3 are of type Data. When a thread has been
+configured to wait for a reply message after having sent a Data message, the reply
+message will be of type <em>Reply</em>. The topic of Reply messages is covered
+in <a href="m60.htm">Module 60: Reply Messages</a>.
+
+<p>
+<h2>Messageflow</h2>
+<center><img src="images/pr_thrd.gif"><BR>
+Figure 10.4 Protocol Thread 
+</center>
+<p>
+The TPS Stacks shown in Figure 10.3 and 10.4  
+(see also <a href="m50.htm"> Module 50: TPS</a>)
+may contain one or more Tcl procedures or Java classes that process/alter the individual messages being processed by the thread.
+
+<p>
+<h2>Message flow, Xlate Thread</h2>
+<center><img src="images/xlt_thrd.gif"><BR>
+Figure 10.5 Translation Thread 
+</center>
+<p>
+The Xlate thread, of which the structure is shown in figure 10.5, is responsable both
+for the routing as well the translation of messages. 
+Messages are configured to be routed to certain destination systems, based either on 
+their transaction id (TrixID, message type) or by their source (static routing). 
+A route is always associated with one of the possible translations:
+<UL>
+<LI>Raw - route messages without translation;
+<LI>Xlate - route & translate, using a translation specification (*.XLT);
+<LI>Generate - determination of routing and translation at run-time. 
+    See <a href="m74.htm">Module 74: Routing messages</a>.
+</UL>
+<p>
+The routing and translation of a message can be influenced from within a translation 
+specification by using the
+translation actions <b>CONTINUE, SEND</b> and <b>SUPPRESS</b>. 
+These translation actions can be used in order to generate multiple outbound
+messages based on a single inbound messsage. These translation actions are mostly used 
+in combination with an ITERATE translation action.
+<P>
+Copyright 2002 Health-Comm GmbH
+
+</BODY>
+</HTML>

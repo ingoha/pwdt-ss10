@@ -1,0 +1,293 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 54: Character Encoding </h1>
+
+
+
+
+
+
+<h2>Extended character cookbook version 1.5</h2>
+
+For those users of the Integrator 3.8.x or 5.x that have a requirement to support extended characters (i.e. 8-bit characters that have an ordinal value in the range consisting of [x80 - xFF], or decimal [128 - 255]), the following checklist can be used to ensure that the character encoding is preserved during processing or properly transliterated. Note that in Tcl, all characters contained in any variable value are encoded using Unicode. (Actually it uses the UTF-8 encoding, a version of Unicode that is 'optimized' for storage space). The Integrator engine supports messages that contain 8-bit byte arrays, i.e. the engine itself leaves it up to the user to decide what encoding is to be used within messages.
+
+<p>
+
+
+<TABLE>
+<TR><TD valign="top">1.</TD><TD>Change the system encoding to iso8859-1. <br>
+Create a new localInit.tcl file in the $HCIROOT/tcl/lib/ directory. The contents of $HCIROOT/tcl/lib/localInit.tcl 
+should be the following: 
+<PRE>#change system encoding to iso-8859-1
+catch { encoding system iso8859-1 }</PRE>
+This setting will greatly reduce the chance that characters will be improperly transformed when doing character i/o using Tcl commands.
+
+</TD></TR><TR><TD valign="top">2.</TD><TD>
+The naming of all static Integrator configuration elements should be standard US-ASCII only. <br>
+ Don't use any extended characters in filenames, fieldnames, messagenames, segmentnames, procedurenames etc.  To put it in another way: extended characters may appear IN a message only. The only exception to this rule are XML tagnames, they supprt extended characters.
+
+</TD></TR><TR><TD valign="top">3.</TD><TD>
+In Tcl code (where all strings are Unicode encoded), replace all extended characters with their hexcodes according to the Unicode encoding. <br>
+ For example, the Tcl snippet 'set special "Universit&auml;t"' should be 'set special "Universit\u00E4t"' (Remember: in Tcl all characters are Unicode). Alternatively,
+ the extended characters can be specified as iso8859-1 characters (e.g. "Universit\xE4t"). You're allowed to do this because the first 256 charactars of Unicode are exactly the same as the 256 characters in the iso8859-1 character set. We do however recommend you always use Unicode to specify extended characters.
+You are advised to use paper or image-based encoding reference tables (such as table 54.4 below), don't rely on character codes as shown/used by text editors since these may very well use a different encoding than what you would expect. 
+
+</TD></TR><TR><TD valign="top">4.</TD><TD>
+Use the <em>fconfigure</em> command when reading/writing to/from files in Tcl. <br>
+Check all Tcl procedures (notably UPoC drivers) for any Tcl procedures that read and/or writes to/from files.
+
+(i.e. if they use the <em>open</em>, <em>read_file</em>, <em>write_file</em>, or any other file-accessing Tcl procedures).
+
+
+
+One can make sure that a script reads the file in binary mode by following the “open” command with <em>fconfigure $fh –translation binary</em>. This disables any character conversions, i.e. the 8-bit byte values in the file correspond directly with the first 256 characters in Unicode. This matches the behaviour of Cloverleaf 3.7. Always open files in binary mode to duplicate Cloverleaf 3.7 behavior.
+<br>
+Additional note on binary file reads:
+If you use line-oriented reads you may find that “fconfigure $fh –translation binary” has an undesired side effect. The binary translation turns off end-of-line conversions so operations like “gets” hay have extra line feed or carriage return characters appended. If you wish to keep the end-of-line conversions in place it may be more appropriate to use <em>fconfigure $fh –encoding binary –eofchar {}</em>.
+
+
+</TD></TR><TR><TD valign="top">5.</TD><TD>
+Identify systems that use other encodings, transliterate encodings if necessary.<br>
+If any of the threads connects to a system that does not use the encoding used by systems it exchages data with then the data recieved from the system that the thread connects to (or: the data that is to be sent by the protocol driver to the remote system) has to be converted to the appropriate character encoding using the <em>gc_convertToCharset</em> or the <em>gc_convertFromCharset</em> procedure (contained in the gen_charset_procs.tcl file). These procedures are based on the Tcl <a href="#encoding">encoding convert*</a> commands.<br>
+The <em>msgmapdata</em> Tcl extension can be used in case there is a requirement for a transliteration which involves non-standard character sets.
+
+</TD></TR>
+</TABLE>
+
+<p>
+<center><img src="images/proto_encoding.bmp"> <br>
+          &nbsp; <br>
+ <em><b>Figure 54.1: Potentially required encoding transliterations</b></em></center>
+<p>
+
+If you really need to violate the recommendations of this cookbook, then test your solution using the engine, NOT using the testing tools. The testing tool may react in a different way to character encoding issues than the engine itself.
+
+
+
+
+<h2>Support for 8-bit character sets</h2>
+
+The Integrator has been developed to support messages that contain 'bytes'. Each of these bytes normally corresponds to a 8-bit character. Character encoding (how to interpret a byte, i.e. how to map a byte value to a character representation) isn't explicitely supported by the engine.
+
+<p>
+<center>
+Gr&auml;fin B&ouml;mer zu Gr&uuml;be <br>
+&nbsp; <br>
+<em><b>Figure 54.2: Example of ISO-8859-1</b></em></center>
+</center>
+
+<p>
+The Integrator recently (in version 3.8.1 and higher) supports a Tcl version (8.3+) that supports multiple character
+sets, including Unicode.
+This means that in the Integrator versions 3.8 and above special care must be taken when moving characters into message objects and/or when retrieving characters from messages. This to ensure that a certain character (e.g. sent by one system using the 8-bit value 229) will be interpreted by a recieving system as the character which was sent; the recieving system may well use a code set that interprets the byte-value 229 to be an entirely different character.
+
+
+<p>
+<center>
+&lt;name use="IDE"&gt; 
+&lt;family&gt;&#26408;&#26449;
+&lt;/family&gt; 
+&lt;given&gt;&#36947;&#30007;
+&lt;/given&gt;
+&lt;/name&gt; <br>
+&lt;name use="SYL"&gt; 
+&lt;family&gt;&#12365;&#12418;&#12425;
+&lt;/family&gt; 
+&lt;given&gt;&#12415;&#12385;&#12362;
+&lt;/given&gt; 
+&lt;/name&gt; <br>
+&lt;name use="ABC"&gt;
+&lt;family&gt;KIMURA&lt;/family&gt; 
+&lt;given&gt;MICHIO&lt;/given&gt; 
+&lt;/name&gt; <br>
+&nbsp; <br>
+<em><b>Figure 54.3: Unicode example taken from HL7 version 3</b></em></center>
+</center>
+
+<!-----------
+<p>
+<center><img src="images/hindi2.gif"> <br>
+          &nbsp; <br>
+ <em><b>Figure 54.3: Unicode text using the Devanagri script</b></em></center>
+<p>
+----------------->
+
+<p>
+Character sets have been historically defined by vendors (e.g. IBM's code pages 850 or 470)
+or by international standardization bodies like ISO (ISO-8859-1 through to ISO-8859-9 
+for Latin, Cyrillic, Greek, Hebrew and Arabic character sets) or the Unicode consortium (e.g. Unicode, UTF-8, UTF-16).
+Tcl (8.3+) supports the folowing encodings (based on the output from the <b>encoding names</b> Tcl command): 
+<UL>
+<LI> selected 8-bit encodings: iso8859-1 (ISO Latin-1), cp437 (U.S.English), cp850 (Multilingual-Latin), cp1252
+<LI> selected multi-byte encodings: unicode, utf-8
+<LI> other encodings: ascii big5 cp1250 cp1251 cp1253 cp1254 cp1255 cp1256 cp1257 cp1258 cp737 cp775 cp852 cp855 cp857 cp860 cp861 cp862 cp863 cp864 cp865 cp866 cp869 cp874 cp932 cp936 cp949 cp950 dingbats euc-cn euc-jp euc-kr gb12345 gb1988 gb2312 identity iso2022 iso2022-jp iso2022-kr iso8859-1 iso8859-2 iso8859-3 iso8859-4 iso8859-5 iso8859-6 iso8859-7 iso8859-8 iso8859-9 jis0201 jis0208 jis0212 koi8-r ksc5601 macCentEuro macCroatian macCyrillic macDingbats macGreek macIceland macJapan macRoman macRomania macThai macTurkish macUkraine shiftjis symbol
+</UL>
+
+<p>
+<center>
+<img src="images/Cp1252.gif"><br>
+<em><b>Figure 54.4: Windows Cp1252 (equal to ISO-8859-1 except for x80-x9F)</b></em></center>
+</center>
+<br>
+The Windows code page 1252 is the Windows character encoding 'closest' to Unicode and iso-8859-1. The character range x80-x9F is used by Unicode/iso8859-1 for (rather obscure) additional control characters, much like the range x00-x1F. There is only 1 widely-used character that is not contained in iso8859-1, which is the &#8364; (Euro currency) character. Use \u20AC to specify it in Tcl.
+
+<p>
+See <a href="http://www.cs.tut.fi/~jkorpela/chars/index.html">www.cs.tut.fi/~jkorpela/chars/index.html</a> for an excellent tutorial related to encodings, character sets and the eternal confusion related to encoding issues.
+
+<h3>Transliteration of standard encodings</h3>
+
+The following standard Tcl procedures assist the process of encoding transliteration:
+
+<a name="encoding">
+<TABLE>
+<TR><TD bgcolor=#999999 valign="top">*&nbsp;</TD><TD> 
+<B>encoding convertto ?charset? data</b> <BR>
+Purpose: Convert the standard system encoding of the specified data to the specified charset encoding. 
+The result of the procedure is the newly encoded string.<BR>
+
+<PRE># &auml; is encoded as \u00E4 in Unicode, \xE4 (228) in ISO8859-1 and \x84 (132) in cp437.
+hcitcl>ctype ord [encoding convertto "cp437" \u00E4]
+132
+hcitcl>msgset $mh "Q\u00E4Q"; set charset "cp437"
+hcitcl>msgset $mh [encoding convertto $charset [msgget $mh]] ; echo [msgget $mh]
+Q<b>?</b>Q  
+# In byte values: \x51\x84\x51
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">*&nbsp;</TD><TD> 
+<B>encoding convertfrom ?charset? data</b> <BR>
+Purpose:  Convert the character encoding as used in the specified data to the standard system encoding. 
+The result of the procedure is the newly encoded string. <BR>
+
+<PRE># &auml; is encoded as \u00E4 in Unicode, \xE4 (228) in ISO8859-1 and \x84 (132) in cp437.
+hcitcl>ctype ord [encoding convertfrom "cp437" \x84]
+228
+hcitcl>msgset $mh "Q\x84Q"; set charset "cp437"
+hcitcl>msgset $mh [encoding convertfrom $charset [msgget $mh]] ; echo [msgget $mh]
+Q&auml;Q 
+# In byte values: \x51\xE4\x51 (Unicode: \u0051\u00E4\u0051)
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+*&nbsp;</TD><TD> <a name="fconfigure"><B>fconfigure channelId ?-encoding charset? ?-translation mode?</b> <BR>
+Purpose: Configure the way in which byte-values read/written to/from a channel (e.g. a file) are to
+be encoded. <BR>
+
+<PRE># open a file that contains cp437 encoded characters
+set fh [open ...... ]
+fconfigure $fh -translation {lf lf} -encoding cp437
+set c [read $fh]
+close $fh
+# Contents of $c are based on the Unicode character encoding.
+</PRE>
+</TD></TR>
+
+</TABLE>
+
+
+<h3>Transliteration of non-standard encodings</h3>
+
+
+The Integrator specific encoding extensions to Tcl use a character-map table to accomplish 
+transliterion of 8-bit character sets. A character-map table represented by a Tcl-list of 256 caharacter values. 
+The ordinal value of the input character serves as the index into the list; the value at that position is the transliterated value. 
+<p>
+<b>Notes:</b>
+These Tcl extensions are totally independent of the support (in Tcl version 8.3+) for 'encodings'
+and character sets in Tcl.
+In Europe the transliteration options of the Integrator are mostly used to convert 
+extended characters (ASCII > 127) that
+are encoded in some non-standard fashion.
+A common example in the U.S. is the conversion of characters from 
+the US-ASCII encoding to the EBCDIC encoding and vice versa. 
+
+<TABLE>
+<TR><TD bgcolor=#999999 valign="top">
+*&nbsp;</TD><TD> <B>LoadStdCmapTables</b> <BR>
+Purpose: This function initializes the standard mapping tables that are included
+in the Integrator. This function and the standard mapping tables are defined in
+$HCIROOT/tcl/lib/cloverleaf/hciStart.tlib.
+The function returns "1" as its result if it is called for the first time. <BR>
+Notes: Integrator contains the following standard mapping tables which map characters
+between the US-ASCII (ordinal values below 128) and EBCDIC character sets:
+<UL>
+<LI>ibm_e2a, ibmtext_e2a, hci_e2a;
+<LI>ibm_a2e, ibmtext_a2e, hci_a2e.
+</UL>
+This function is almost always used in the 'start' mode of a TPS-procedure.<BR>
+Examples:
+
+<PRE>hcitcl>LoadStdCmapTables
+1
+hcitcl>set mh [msgcreate "MSG"] ; msgmapdata $mh hci_a2e
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+* </TD><TD> <B>adddatamap mapName mapList</b> <BR>
+Purpose: This function initializes a mapping table.
+The MapName parameter has to be a unique name for the to be initialized table.
+The mapList parameter is a Tcl-list containing 256 map table elements (ordinal values).<BR>
+Notes: This function is almost always used in the 'start' mode of a TPS-procedure.<BR>
+Examples: Suppose the sending system uses an 8-bit extended characterset and the receiving system 
+is only able to process standard ASCII characters (with an ordinal value < 128).
+
+<PRE>for { set i 0 } { $i &lt; 256 } { incr i } { lappend clist $i }
+# map char 252 (u umlaut) to 117 (u).
+lvarpop clist 252 117
+# map char 220 (U umlaut) to 85 (U).
+lvarpop clist 220 85
+adddatamap no-umlaut $clist
+</PRE>
+Of course the entire table can be specified as well:
+<PRE>adddatamap no-umlaut { 0 1 2 3 4 5 6 .. 219 85 221 .. 251 117 253 254 255 }
+</PRE>
+</TD></TR>
+
+<TR><TD bgcolor=#999999 valign="top">
+* </TD><TD> <B>msgmapdata messageHandle mapName</b> <BR>
+Purpose: This function maps the contents of a message using a mapping table.<BR>
+Notes: Use either LoadStdCmapTables or adddatamap to initilize a mapping table
+before using msgmapdata. <br>
+Examples:
+
+<PRE>hcitcl>LoadStdCmapTables  ;# init std mapping tables
+hcitcl>set mh [ msgcreate "ASCII" ]
+hcitcl>msgmapdata $mh ibm_a2e ; msgdump $mh
+....
+message: '\xc1\xe2\xc3\xc9\xc9'
+hcitcl>msgmapdata $mh ibm_e2a ; msgdump $mh
+....
+message: 'ASCII'
+</PRE>
+</TD></TR>
+
+</TABLE>
+
+<p>
+References: <UL>
+<LI>The Unicode Standard - version 2.0, The Unicode consortium, 1996. 
+ISBN 0-201-48345-9. See also www.unicode.org.
+<LI>XML Internationalization and Localization, Yves Savourel, SAMS Publishing, 2001. ISBN 0-672-32096-7
+<LI>Software Internationalization and Localization - an Introduction, Emmanuel Uren et al.,
+VNR Computer Library, 1993. ISBN 0-442-01498-8 
+</UL>
+
+
+
+<p>
+Copyright 1998,2002
+</BODY>
+</HTML>

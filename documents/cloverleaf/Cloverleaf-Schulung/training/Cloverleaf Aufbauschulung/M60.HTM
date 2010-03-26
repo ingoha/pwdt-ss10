@@ -1,0 +1,142 @@
+<HTML>
+<HEAD>
+        <TITLE>Integrator Level II Training</TITLE><LINK href="training.css" type=text/css rel=stylesheet>
+</HEAD>
+<BODY>
+
+
+
+<h1>
+<img src="images/hie_box.gif" align="middle" hspace=7> 
+ Integrator - Level II Training </H1>
+
+<h1> Module 60: Reply messages</h1>
+
+
+
+
+
+The Integrator engine distinguishes two <em>Types</em> of messages: 
+Data messages and Reply messages.
+<p>
+When a protocol thread has been configured to 'await_replies',
+the first message received by the thread after having sent a Data message will
+be regarded as a Reply message.
+When a message is received by the protocol thread without having perviously sent
+a data message, the inbound message will be processed as an Inbound Data message.
+<p>
+A Reply message is related to -and is a direct result of- a
+Data Message that was sent previously.
+A message of Type Reply is usually either a <em>application level acknowledgement</em> 
+(which indicates that the message was correctly internalized)
+or a Reply to a query (Data) message.
+
+<h2>Reply message flow</h2>
+
+The message flow of reply messages can be compared to that of Data messages.
+The handling of Reply messages is totally separate from the handling of Data messages:
+a separate TrxId determination procedure is used, the routing of reply messages can be
+separately defined, <em>reply TPS queues</em> are used in stead of <em>data TPS queues</em>.
+<p>
+The routing of the Reply messages has to be configured with the aid of the NetConfig tool.
+(inbound/ configure/ route Replies).
+The destination of a reply message is determined by the source of the Data message that 
+led to the receipt of the Reply message.
+If the source of the data (query) message is one out of a group of connections,
+the replies have to routed to all possible sources. The replies will in fact be 
+routed back to the "right" (i.e. the source of the data message) connection only.
+<p>
+Note: if a route (either static or using trxIds) to the original source system has not 
+been defined the following error will occur: <br>
+<FONT COLOR=#FF0000>[xlt: rout: ERR/0: <em>process</em>_xlate] No route defined for TrxId '_HCI_static_route_-<em>source_thread</em>'</FONT>  
+<br>
+This error occurs mostly if (a) the reply message has a trxId other than those defined
+in the route Replies option in the Network Configurator, or (b) the reply message is not currently routed
+to the <em>source_thread</em>.
+<p>
+<center><img src="images/msgfl_r.gif"><BR>
+Figure 60.1 Reply message flow (Copyright 1997, HCI)
+</center>
+<p>
+Figure 60.1 shows a typical messageflow of Data and Reply messages within the engine. 
+An inbound
+Data message (1) is respectively processed by an IB protocol thread (including
+the IB Data TPS), a Xlate thread (including UPoCs),
+an OB protocol thread (including the OB Data TPS).
+The OB Thread has been configured to 'await_replies'.
+<p>
+After the delivery of a message by the OB Protocol thread, the receipt of a
+Reply message is expected.
+The next message received (5) by the protocol thread will be regarded as being
+related to the Data message sent before (i.e. as a Reply message) and will
+be routed to the originator of the Data message (4).
+
+The inbound
+Reply message (5) is respectively processed by an IB protocol thread (including
+the IB Reply TPS), a Xlate thread (including UPoCs),
+an OB protocol thread (including the OB Reply TPS). The message will finally
+be delivered to the destination by the protocol thread (8).
+<p>
+Messages 1,2,3 and 4 are <em>Data messages</em>, 5,6,7 and 8 <em>Reply messages</em>.
+Messages 1,3,4,5,7 and 8 belong to message class <em>protocol</em>, exchanged
+with the aid of socket based communication (3 and 7) or any of the
+ supported protocols. 
+Messages 2 and 6 belong to message class <em>engine</em>. The exchange of the messages
+is performed by the <em>Interthread Communication Library - ICL </em> 
+(in-memory data transfer).
+
+<a name="expect_reply">
+<h2>The expect_reply metadata FLAG</h2>
+
+The expect_reply metadata FLAG of all outbound messages will be raised
+by a protocol thread when it has been configured to 'await_replies'.
+The protocol driver within the engine uses this flag to see if the next inbound 
+message is to be treated as a REPLY or as a DATA message.
+<p>
+When replies are expected for certain types of messages but not for other message types,
+the expect_reply metadata FLAG of the latter messages should be set to FALSE
+in an OB-TPS.
+<p>
+See the <a href="m60v.htm">Example #1: Modifying the expect_reply FLAG</a>.
+
+<h2>Reply Generation TPS</h2>
+
+The Reply Generation UPoC is executed when a thread has been configured to await replies,
+a data message is sent, and a reply message is not received within a given amount of time.
+If a thread has been configured to await replies forever (-1), then the Reply Generation
+UPoC will never be executed.
+<p>
+One of the arguments passed to the Reply Generation TPS stack is a message handle
+of a copy of the original Data message for which no reply was received.
+The contents of this data message can be used to either construct a reply or resend
+the data message. 
+
+<p>
+The Reply Generation UPoC is mostly used for the following purposes:
+<UL>
+<LI><b>Generating a (fake) inbound reply message</b><BR>
+A reply message has not been received. 
+As a consequence of this, the system that did sent the original data (query) message
+won't receive a reply. Depending on its configuration, the interface of the
+original sending system may block indefinitely until it receives a reply message. 
+In order to satisfy its need for a reply message, a reply message
+can be generated in a TPS procedure and sent to the original sending
+system instead of the missing reply message. <br>
+See also <a href="m60v.htm">Example #2: Generating a reply message</a>.
+<LI><b>Resending the outbound data message</b><BR>
+The fact that no reply message was received could be caused by the fact that
+the delivery of the data (query) message failed. 
+The TPS procedure can cause the data message to be delivered again 
+using the PROTO disposition. 
+</UL>
+
+<h2>Note: “Await Reply” mode on a TCP/IP Multi_Server Thread</h2>
+
+When a Multi-Server thread has “Await Replies” enabled it will enter “Awaiting Reply” mode after each outbound message is written. No other messages will be written until a reply is received. The reply must come from the specific client that the outbound message was written to. Messages can still be received from other clients while awating a reply. Messages from other clients are treated as data messages. If the client that the thread is awaiting replies from disconnects, The “Awaiting Reply” mode is canceled. This is the same behavior as occurs on a single server thread.
+
+
+
+<p>
+Copyright 2002,2003 Health-Comm GmbH [45][40][30][35]
+</BODY>
+</HTML>

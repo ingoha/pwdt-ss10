@@ -1,0 +1,19 @@
+# Translation lookup table
+#
+prologue
+    who:	HCI Network User
+    date:	Mon Dec 13 08:29:43 W. Europe Standard Time 1999
+    version:	3.0
+    type:	tbl
+    bidir:	0
+    inname:	input
+    outname:	output
+end_prologue
+#
+dflt=F
+#
+C
+S
+#
+T
+S
