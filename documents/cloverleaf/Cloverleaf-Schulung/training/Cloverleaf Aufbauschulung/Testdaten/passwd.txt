@@ -1,9 +1,0 @@
-root:0:0:xxxxxxx:Root:/bin/sh
-dirk:1:10:xxxxxx:Dirk Engels:/bin/sh
-surrendra:2:10:xxxxxx:Surrendra Kummaran:/bin/sh
-cristian:3:10:xxxxx:Cristian Weiﬂichnich:/bin/sh
-jens:4:10:xxxxxx:Jens Irgendwer:/bin/sh
-holger:5:10:xxxx:Holger:/bin/sh
-carsten:6:10:xxxxxx:Carsten:/bin/sh
-helge:7:10:xxxxxxx:Helge:/bin/sh
-frank:8:10:xxxxx:Frank:/bin/sh
