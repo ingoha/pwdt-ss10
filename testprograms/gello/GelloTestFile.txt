@@ -1,0 +1,2 @@
+let a:integer = 100
+let b:integer = 80
