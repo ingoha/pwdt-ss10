@@ -1,0 +1,1 @@
+let painSeverity: boolean = Observation->exists(interpretationCode->exists(code = "76948002" or code = "50415004"))

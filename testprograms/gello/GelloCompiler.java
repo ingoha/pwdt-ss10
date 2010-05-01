@@ -1,6 +1,6 @@
 /* Info:
  * Diese Software steht unter der GNU Lesser General Public License.
- * Die Lizenzbedingungen können im beigefügten Textdokument nachgelesen werden.
+ * Die Lizenzbedingungen kÃ¶nnen im beigefÃ¼gten Textdokument nachgelesen werden.
  *
  * This software is distributed under the GNU Lesser General Public License.
  * You may read the terms of the licence in the attached text file.
@@ -34,7 +34,7 @@ class GelloCompiler
 			System.out.println("Error while reading source file."); 
 			return; 
 			}
-		source.replaceAll("\n", "\r\n"); // This replacement is also done in the gello client,
+//		source.replaceAll("\n", "\r\n"); // This replacement is also done in the gello client,
 										 // so we do it here as well. Is this a hint to character set
 										 // problems?
 		System.out.println("Successfully loaded file:\n"+source);
@@ -46,8 +46,8 @@ class GelloCompiler
 		String fileSeparator = System.getProperty("file.separator");
      	String packageName = args[0]+"_package";
 		String className = args[1];
-		String path = ".\\";
-		String javaClassPath = ".\\"; //perhaps we need more libraries later, then make a subdirectory .\\libs for example
+		String path = "./";
+		String javaClassPath = "./"; //perhaps we need more libraries later, then make a subdirectory .\\libs for example
 
 		//create compiler object
 		org.gello.compiler.Compiler myCompiler = new org.gello.compiler.Compiler();
