@@ -1,0 +1,17 @@
+Stand 5.5.2010
+
+Cloverleaf-Kommunikation mit Testanwendung:
+- Wenn Kommunikation läuft könnte Gello-Code evtl. in die Testanwendung integriert werden
+- Über den Webservice haben wir einiges heraus gefunden, allerdings läuft die Kommunikation trotzdem noch nicht
+- Einfachere Möglichkeit wäre Kommunikation über Datei
+- Sergej hilft über Kontakt mit Cloverleaf
+- Wie weiter vorgehen?
+
+Gello-Compiler:
+- Die vorhandene Client-Software ist nicht fertig programmiert und daher nicht einsetzbar.
+- Compiler-Quellcode ausfindigt gemacht
+- versucht einen kommandozeilenbasierten Gello-zu-Java-Compiler (unter Verwendung des vorhandenen Quellcodes) zu programmieren
+	=> allerdings hat der vorhandene Quellcode Fehler, um einen Compiler zum Laufen zu bringen, müsste man den fremden Code
+	debuggen
+	=> der Compiler basiert auf SableCC, hier könnte man evtl. gut aufbauen.
+- Weiteres Vorgehen hier?
