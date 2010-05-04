@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:annotation>
+		<xs:documentation>Synthesized by Zubin Tiku from the HL7 RIM specification @ http://www.hl7.org/v3ballot/html/domains/pc/hmrepc.htm</xs:documentation>
+	</xs:annotation>
+	<xs:include schemaLocation="voc.xsd"/>
+	<xs:complexType name="Act">
+		<xs:annotation>
+			<xs:documentation>Hl7 Act @ http://www.hl7.org/v3ballot/html/infrastructure/rim/rim.htm#Act-cls</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>			
+			<xs:element name="id" type="II" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						A unique identifier for the Act.
+					 </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="code" type="CD" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						A code specifying the particular kind of Act that the Act-instance represents within its class.
+					 </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="title" type="ED" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						A word or phrase by which a specific Act may be known among people.
+					 </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="text" type="ED" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						A textual or multimedia description (or reference to a description) of the Act.
+					 </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="effectiveTime" type="IVL_TS" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						A time expression specifying the focal or operative time of the Act, the primary time for which the Act holds, the time of interest from the perspective of the Act's intention.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="activityTime" type="IVL_TS" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						A time expression specifying when an Observation, Procedure, or other Act occurs, or, depending on the mood, is supposed to occur, scheduled to occur, etc. It tells you when the labor was done for an Act. The activityTime includes the times of component actions (such as preparation and clean-up)For Procedures and SubstanceAdministrations, the activityTime can provide a needed administrative / scheduling function by providing a more complete time that needs to be anticipated for particular acts.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="availabilityTime" type="TS" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						The point in time at which information about Act-instance (regardless of mood) first became available to a system reproducing this Act.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="priorityCode" type="CE" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						A code or set of codes (e.g., for routine, emergency), specifying the urgency under which the Act happened, can happen, is happening, is intended to happen, or is requested/demanded to happen.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="confidentialityCode" type="CE" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						A code that controls the disclosure of information about this Act, regardless of mood.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="repeatNumber" type="IVL_INT" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						An interval of integer numbers stating the minimal and maximal number of repetitions of the Act.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="levelCode" type="CE" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						Code specifying the level within a hierarchical Act composition structure and the kind of contextual information attached to composite Acts ("containers") and propagated to component Acts within those containers. The levelCode signifies the position within such a containment hierarchy and the applicable constraints.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="uncertaintyCode" type="CE" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						A code indicating whether the Act statement as a whole, with its subordinate components has been asserted to be uncertain in any way.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="reasonCode" type="CE" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						A code specifying the motivation, cause, or rationale of an Act, when such rationale is not reasonably represented as an ActRelationship of type "has reason" linking to another Act.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="languageCode" type="CE" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						The primary language in which this Act statement is specified, particularly the language of the Act.text.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="classCode" type="cs" use="required">
+			<xs:annotation>
+				<xs:documentation>
+					A code specifying the major type of Act that this Act-instance represents.
+				 </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="moodCode" type="cs" use="required">
+			<xs:annotation>
+				<xs:documentation>
+					A code distinguishing whether an Act is conceived of as a factual statement or in some other manner as a command, possibility, goal, etc.
+				 </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="negationInd" type="bl" use="optional">
+			<xs:annotation>
+				<xs:documentation>
+					An indicator specifying that the Act statement is a negation of the Act as described by the descriptive attributes.
+				 </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="derivationExpr" type="st" use="optional">
+			<xs:annotation>
+				<xs:documentation>
+					A character string containing a formal language expression that specifies how the Act's attributes are (should be or have been) derived from input parameters associated with derivation relationships.
+				 </xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="statusCode" type="cs" use="optional">
+			<xs:annotation>
+				<xs:documentation>
+					A code specifying the state of the Act.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="interruptibleInd" type="bl" use="optional">
+			<xs:annotation>
+				<xs:documentation>
+					An indicator specifying whether Act is interruptible by asynchronous events.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="independentInd" type="bl" use="optional">
+			<xs:annotation>
+				<xs:documentation>
+					An indicator specifying whether the Act can be manipulated independently of other Acts or whether manipulation of the Act can only be through a super-ordinate composite Act that has this Act as a component. By default the independentInd should be true.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+</xs:schema>

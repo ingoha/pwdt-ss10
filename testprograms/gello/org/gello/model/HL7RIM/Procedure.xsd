@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:annotation>
+		<xs:documentation>Synthesized by Zubin Tiku from the HL7 RIM specification @ http://www.hl7.org/v3ballot/html/domains/pc/hmrepc.htm</xs:documentation>
+	</xs:annotation>
+	<xs:include schemaLocation="voc.xsd"/>
+	<xs:include schemaLocation="Act.xsd"/>
+	<xs:complexType name="Procedure">
+		<xs:annotation>
+			<xs:documentation>Hl7 Procedure @ http://www.hl7.org/v3ballot/html/infrastructure/rim/rim.htm#Procedure-cls</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="Act">
+				<xs:sequence>
+					<xs:element name="methodCode" type="CE" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>
+								Identifies the means or technique used to perform the procedure.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="approachSiteCode" type="CD" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>
+								The anatomical site or system through which the procedure reaches its target (see targetSiteCode).
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="targetSiteCode" type="CD" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>
+								The anatomical site or system that is the focus of the procedure.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>
