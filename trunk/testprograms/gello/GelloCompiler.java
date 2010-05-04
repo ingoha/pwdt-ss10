@@ -1,6 +1,6 @@
 /* Info:
  * Diese Software steht unter der GNU Lesser General Public License.
- * Die Lizenzbedingungen können im beigefügten Textdokument nachgelesen werden.
+ * Die Lizenzbedingungen koennen im beigefuegten Textdokument nachgelesen werden.
  *
  * This software is distributed under the GNU Lesser General Public License.
  * You may read the terms of the licence in the attached text file.
@@ -26,13 +26,13 @@ class GelloCompiler
 			return;
 			}
 
-		
+
 		//load source from file
 		String source = readFile(args[0]);
 		if (source==null)
-			{ 
-			System.out.println("Error while reading source file."); 
-			return; 
+			{
+			System.out.println("Error while reading source file.");
+			return;
 			}
 //		source.replaceAll("\n", "\r\n"); // This replacement is also done in the gello client,
 										 // so we do it here as well. Is this a hint to character set
@@ -52,7 +52,7 @@ class GelloCompiler
 		//create compiler object
 		org.gello.compiler.Compiler myCompiler = new org.gello.compiler.Compiler();
 		System.out.println("Trying to compile...");
-		
+
 		// call the compiler method, the params of this method are as follows:
 		// param 1 (source):	 	The Unicode GELLO text to be compiled.
      	// param 2 (model):		 	The GELLO data model to compile against, usually the HL7 RIM.
@@ -64,7 +64,7 @@ class GelloCompiler
      	// 							include the org.gello.runtime package at a minimum.
      	CompileResult result = myCompiler.compile(source,myHL7Model, packageName, className, path, javaClassPath);
 		}
-	
+
 	/**
 	 * This method reads all charakters from a text file and return them as a string.
 	 */
