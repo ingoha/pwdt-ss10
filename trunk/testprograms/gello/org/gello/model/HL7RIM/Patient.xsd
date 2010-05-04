@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:annotation>
+		<xs:documentation>Synthesized by Zubin Tiku from the HL7 Patient Care specification @ http://www.hl7.org/v3ballot/html/domains/pc/hmrepc.htm</xs:documentation>
+	</xs:annotation>
+	<xs:include schemaLocation="voc.xsd"/>
+	<xs:include schemaLocation="Observation.xsd"/>
+	<xs:include schemaLocation="Procedure.xsd"/>
+	<xs:include schemaLocation="SubstanceAdministration.xsd"/>
+	<xs:include schemaLocation="Person.xsd"/>
+	<xs:element name="Patient">
+		<xs:complexType>
+			<xs:annotation>
+				<xs:documentation>Hl7 Patient @ http://gim.upv.es/hl7/html/domains/ct/editable/COCT_HD050000-NoEdit.htm#Patient</xs:documentation>
+			</xs:annotation>
+			<xs:sequence>
+				<xs:element name="patientLivingSubject" type="Person"/>
+				<xs:element name="id" type="II" minOccurs="0" maxOccurs="unbounded">
+					<xs:annotation>
+						<xs:documentation>
+							A unique identifier for the player Entity in this Role.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="addr" type="AD" minOccurs="0" maxOccurs="unbounded">
+					<xs:annotation>
+						<xs:documentation>
+							An address for the Entity while in the Role.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="telecom" type="TEL" minOccurs="0" maxOccurs="unbounded">
+					<xs:annotation>
+						<xs:documentation>
+							A telecommunication address for the Entity while in the Role.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="effectiveTime" type="IVL_TS" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>
+							An interval of time specifying the period during which the Role is in effect, if such time limit is applicable and known.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="confidentialityCode" type="CE" minOccurs="0" maxOccurs="unbounded">
+					<xs:annotation>
+						<xs:documentation>
+							A code that controls the disclosure of information about this Role with respect to the playing Entity.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="veryImportantPersonCode" type="CE" minOccurs="0">
+					<xs:annotation>
+						<xs:documentation>
+							A code specifying the Patient's special status granted by the scoper organization, often resulting in preferred treatment and special considerations. For example, board member, diplomat, etc.
+						 </xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="observation" type="Observation" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element name="substanceAdministration" type="SubstanceAdministration" minOccurs="0" maxOccurs="unbounded"/>
+				<xs:element name="procedure" type="Procedure" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:sequence>
+			<xs:attribute name="classCode" type="cs" use="required">
+				<xs:annotation>
+					<xs:documentation>
+						A code specifying the major category of a Role as defined by HL7 vocabulary.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+			<xs:attribute name="statusCode" type="cs" use="optional">
+				<xs:annotation>
+					<xs:documentation>
+						A code specifying the state of this Role as defined in the state-transition model.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:attribute>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>
