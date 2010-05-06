@@ -34,7 +34,7 @@ class GelloCompiler
 			System.out.println("Error while reading source file.");
 			return;
 			}
-//		source.replaceAll("\n", "\r\n"); // This replacement is also done in the gello client,
+		source.replaceAll("\n", "\r\n"); // This replacement is also done in the gello client,
 										 // so we do it here as well. Is this a hint to character set
 										 // problems?
 		System.out.println("Successfully loaded file:\n"+source);
@@ -63,6 +63,10 @@ class GelloCompiler
      	// param 6 (javacClassPath):The compile-time classpath for the Java compiler. This should
      	// 							include the org.gello.runtime package at a minimum.
      	CompileResult result = myCompiler.compile(source,myHL7Model, packageName, className, path, javaClassPath);
+     	
+     	if (result.isSuccessful()) 
+     		System.out.println("\n \nFinished! Generated file " + className + ".java, which you may now compile with a java compiler.");
+     	else System.out.println("\n \nError during compile process!");
 		}
 
 	/**

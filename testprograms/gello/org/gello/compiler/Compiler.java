@@ -35,18 +35,18 @@ import org.gello.runtime.IGelloModel;
 public class Compiler {
 
     private static Logger log = Logger.getLogger(Compiler.class.getName());
-    
+
     /** Creates a new instance of Compiler */
     public Compiler() {
     }
 
     /** Helper to get the current token */
     public Token getCurrentToken(Lexer lexer) {
-        
+
         if (lexer == null) {
             return null;
         }
-        
+
         try {
             return lexer.peek();
         } catch (LexerException ex) {
@@ -55,7 +55,7 @@ public class Compiler {
             return null;
         }
     }
-    
+
     /** Compile a GELLO unit, assuming it will be run against the supplied data model.
      * NOTE:
      * - The generated Java source is written to a .java file with the specified path
@@ -87,7 +87,7 @@ public class Compiler {
 
             // Run the lexer and parser.
             Start tree = parser.parse();
-            
+
             // If debugging is enabled
             if (log.isLoggable(Level.FINEST)) {
 
@@ -109,12 +109,15 @@ public class Compiler {
             javaWriter.write(javaCode);
             javaWriter.flush();
             javaWriter.close();
-
+            
+			/*
             // Compile the Java source code to a .class file
             JavaCompiler javac = new JavaCompiler(javacClassPath);
             if (!javac.compile(javaFilename)) {
                 result.fatal(null, "msg.error.internal.javac", new Object[] { javac.getStderr() });
+            
             }
+            */
         }
         catch (LexerException ex) {
 

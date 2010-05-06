@@ -1,0 +1,1 @@
+let a: integer = 50; let b: integer = 70
