@@ -5,9 +5,11 @@
  *
  */
 
-package GelloTestFile.txt_package;
 
 import org.gello.runtime.*;
+import org.gello.model.HL7RIM.*;
+import org.gello.model.HL7RIM.generated.*;
+
 
 public class Test implements GelloRunnable {
 
@@ -20,4 +22,22 @@ public class Test implements GelloRunnable {
 
         return v1 + "";
     }
+    
+    /**
+     *
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		
+		Test t = new Test();
+		IGelloModel g = new HL7Model();
+		String output="";
+		try {
+			output = t.run(g);
+		} catch (GelloException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(output);
+	}
 }
