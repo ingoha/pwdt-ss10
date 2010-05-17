@@ -1,0 +1,3 @@
+let a:double = 100
+
+.0

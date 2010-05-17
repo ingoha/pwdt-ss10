@@ -1,0 +1,1 @@
+let colour:enum(red,blue,green)=blue
