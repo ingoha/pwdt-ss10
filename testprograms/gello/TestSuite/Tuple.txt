@@ -1,0 +1,15 @@
+let patient_contact:
+      tuple(      surname: string,
+                  givenname: string,
+                  streetnumber: integer,
+                  streetname
+                  city: string,
+                  zipcode: integer
+                  country: string)
+      = tuple{
+                  surname = "Smith",
+                  givenname = "Fred",
+                  streetnumber = 123,
+                  city = "Heidelberg",
+                  zipcode = 998877,
+                  country = "Germany"}

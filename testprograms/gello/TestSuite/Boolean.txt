@@ -1,0 +1,7 @@
+let advice:boolean = unknown
+let a:integer = 1
+if a=1 
+	then advice = true
+else
+	advice = false
+endif
