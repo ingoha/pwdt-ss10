@@ -1,0 +1,3 @@
+let a:integer = 20
+let b:integer = 7
+a/b
