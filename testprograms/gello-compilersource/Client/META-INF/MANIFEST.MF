@@ -1,0 +1,31 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gello Plug-in
+Bundle-SymbolicName: org.gello.client; singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Localization: plugin
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.ui
+Eclipse-LazyStart: true
+Bundle-ClassPath: lib/gello-client-manager.jar,
+ lib/jaxws/activation.jar,
+ lib/jaxws/FastInfoset.jar,
+ lib/jaxws/http.jar,
+ lib/jaxws/jaxb-api.jar,
+ lib/jaxws/jaxb-impl.jar,
+ lib/jaxws/jaxb-xjc.jar,
+ lib/jaxws/jaxws-api.jar,
+ lib/jaxws/jaxws-rt.jar,
+ lib/jaxws/jaxws-tools.jar,
+ lib/jaxws/jsr173_api.jar,
+ lib/jaxws/jsr181-api.jar,
+ lib/jaxws/jsr250-api.jar,
+ lib/jaxws/resolver.jar,
+ lib/jaxws/saaj-api.jar,
+ lib/jaxws/saaj-impl.jar,
+ lib/jaxws/sjsxp.jar,
+ lib/Gello.jar,
+ lib/HL7_Model.jar,
+ lib/xstream-1.2.jar,
+ .
+Bundle-Vendor: WebReach, Inc.

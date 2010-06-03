@@ -1,0 +1,19 @@
+<org.gello.server.model.GelloNode>
+  <isFile>true</isFile>
+  <isCompilable>false</isCompilable>
+  <isTestable>false</isTestable>
+  <isDeletable>true</isDeletable>
+  <name>*File 1</name>
+  <path>/*File 1</path>
+  <children/>
+  <menuActions>
+    <string>org.gello.client.actions.contextMenu.OpenFile</string>
+    <string>org.gello.client.actions.contextMenu.DeleteFile</string>
+    <string>org.gello.client.actions.contextMenu.VersionInfo</string>
+  </menuActions>
+  <editorActions>
+    <string>org.gello.client.actions.fileEditor.DeleteFile</string>
+    <string>org.gello.client.actions.fileEditor.VersionInfo</string>
+  </editorActions>
+  <fileData></fileData>
+</org.gello.server.model.GelloNode>

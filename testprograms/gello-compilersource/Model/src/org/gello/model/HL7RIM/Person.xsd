@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:annotation>
+		<xs:documentation>Synthesized by Zubin Tiku from the HL7 Patient Care specification @ http://www.hl7.org/v3ballot/html/domains/pc/hmrepc.htm</xs:documentation>
+	</xs:annotation>
+	<xs:include schemaLocation="voc.xsd"/>
+	<xs:complexType name="Person">
+		<xs:annotation>
+			<xs:documentation>Hl7 Person from  @ http://gim.upv.es/hl7/html/domains/ct/editable/COCT_HD030000-NoEdit.htm#Person</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="id" type="II" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						A unique identifier for the Entity.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="name" type="EN" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						A non-unique textual identifier or moniker for the Entity.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="desc" type="ED" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						A textual or multimedia depiction of the Entity.
+					 </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="administrativeGenderCode" type="CE" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						A value representing the gender (sex) of a Living subject.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="birthTime" type="TS" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						The date and time of a living subject's birth or hatching.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="deceasedTime" type="TS" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						The date and time that a living subject's death occurred.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="maritalStatusCode" type="CE" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						A value representing the domestic partnership status of a person.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="educationLevelCode" type="CE" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						The highest level of education a person achieved (e.g. elementary school, high school or secondary school degree complete, college or baccalaureate degree complete).
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="disabilityCode" type="CE" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						A value identifying a person's disability.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="livingArrangementCode" type="CE" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						A value specifying the housing situation of a person.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="religiousAffiliationCode" type="CE" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						The primary religious preference of a person (e.g. Hinduism, Islam, Roman Catholic Church).
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="raceCode" type="CE" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						A value representing the race of a person.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ethnicGroupCode" type="CE" minOccurs="0" maxOccurs="unbounded">
+				<xs:annotation>
+					<xs:documentation>
+						The ethnic group of the person.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="classCode" type="cs" use="required">
+			<xs:annotation>
+				<xs:documentation>
+					A code specifying the major category of a Role as defined by HL7 vocabulary.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="determinerCode" type="cs" use="required">
+			<xs:annotation>
+				<xs:documentation>
+					An HL7 defined value representing whether the Entity represents a kind-of or a specific instance.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="statusCode" type="cs" use="optional">
+			<xs:annotation>
+				<xs:documentation>
+					A value representing whether the information associated with the Entity is currently active or inactive for the purpose of participation in acts.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="deceasedInd" type="bl" use="optional">
+			<xs:annotation>
+				<xs:documentation>
+					An indication that the subject is dead.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="multipleBirthInd" type="bl" use="optional">
+			<xs:annotation>
+				<xs:documentation>
+					An indication as to whether the living subject is part of a multiple birth.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="multipleBirthOrder" type="int" use="optional">
+			<xs:annotation>
+				<xs:documentation>
+					The order in which this living subject was born if part of a multiple birth.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="organDonorInd" type="bl" use="optional">
+			<xs:annotation>
+				<xs:documentation>
+					An indication that the living subject is a candidate to serve as an organ donor.
+				</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>	
+	</xs:complexType>
+</xs:schema>

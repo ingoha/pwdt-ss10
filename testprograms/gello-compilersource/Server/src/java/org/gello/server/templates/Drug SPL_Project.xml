@@ -1,0 +1,425 @@
+<org.gello.server.model.GelloNode>
+  <isFile>false</isFile>
+  <isCompilable>false</isCompilable>
+  <isTestable>false</isTestable>
+  <isDeletable>false</isDeletable>
+  <name>*Project 1</name>
+  <path>/*Project 1</path>
+  <children>
+    <org.gello.server.model.GelloNode>
+      <isFile>true</isFile>
+      <isCompilable>false</isCompilable>
+      <isTestable>false</isTestable>
+      <isDeletable>false</isDeletable>
+      <name>Properties</name>
+      <path>/*Project 1/Properties</path>
+      <children/>
+      <menuActions>
+        <string>org.gello.client.actions.contextMenu.OpenFile</string>
+        <string>org.gello.client.actions.contextMenu.CheckoutFile</string>
+        <string>org.gello.client.actions.contextMenu.CheckinFile</string>
+        <string>org.gello.client.actions.contextMenu.BuildProject</string>
+        <string>org.gello.client.actions.contextMenu.TestProject</string>
+        <string>org.gello.client.actions.contextMenu.ExportProject</string>
+        <string>org.gello.client.actions.contextMenu.VersionInfo</string>
+      </menuActions>
+      <editorActions/>
+      <fileData></fileData>
+    </org.gello.server.model.GelloNode>
+    <org.gello.server.model.GelloNode>
+      <isFile>false</isFile>
+      <isCompilable>false</isCompilable>
+      <isTestable>false</isTestable>
+      <isDeletable>false</isDeletable>
+      <name>SPL Sections</name>
+      <path>/*Project 1/SPL Sections</path>
+      <children>
+        <org.gello.server.model.GelloNode>
+          <isFile>false</isFile>
+          <isCompilable>false</isCompilable>
+          <isTestable>false</isTestable>
+          <isDeletable>false</isDeletable>
+          <name>Indications</name>
+          <path>/*Project 1/SPL Sections/Indications</path>
+          <children>
+            <org.gello.server.model.GelloNode>
+              <isFile>false</isFile>
+              <isCompilable>false</isCompilable>
+              <isTestable>false</isTestable>
+              <isDeletable>false</isDeletable>
+              <name>*Indication 1</name>
+              <path>/*Project 1/SPL Sections/Indications/*Indication 1</path>
+              <children>
+                <org.gello.server.model.GelloNode>
+                  <isFile>true</isFile>
+                  <isCompilable>false</isCompilable>
+                  <isTestable>false</isTestable>
+                  <isDeletable>false</isDeletable>
+                  <name> SPL Content</name>
+                  <path>/*Project 1/SPL Sections/Indications/*Indication 1/ SPL Content</path>
+                  <children/>
+                  <menuActions>
+                    <string>org.gello.client.actions.contextMenu.OpenFile</string>
+                    <string>org.gello.client.actions.contextMenu.CheckoutFile</string>
+                    <string>org.gello.client.actions.contextMenu.CheckinFile</string>
+                    <string>org.gello.client.actions.contextMenu.VersionInfo</string>
+                  </menuActions>
+                  <editorActions>
+                    <string>org.gello.client.actions.fileEditor.CheckoutFile</string>
+                    <string>org.gello.client.actions.fileEditor.CheckinFile</string>
+                    <string>org.gello.client.actions.fileEditor.SaveFile</string>
+                    <string>org.gello.client.actions.fileEditor.VersionInfo</string>
+                  </editorActions>
+                  <fileData></fileData>
+                </org.gello.server.model.GelloNode>
+                <org.gello.server.model.GelloNode>
+                  <isFile>false</isFile>
+                  <isCompilable>false</isCompilable>
+                  <isTestable>false</isTestable>
+                  <isDeletable>false</isDeletable>
+                  <name>*Detail 1</name>
+                  <path>/*Project 1/SPL Sections/Indications/*Indication 1/*Detail 1</path>
+                  <children>
+                    <org.gello.server.model.GelloNode>
+                      <isFile>true</isFile>
+                      <isCompilable>false</isCompilable>
+                      <isTestable>false</isTestable>
+                      <isDeletable>false</isDeletable>
+                      <name>Parsed SPL</name>
+                      <path>/*Project 1/SPL Sections/Indications/*Indication 1/*Detail 1/Parsed SPL</path>
+                      <children/>
+                      <menuActions>
+                        <string>org.gello.client.actions.contextMenu.OpenFile</string>
+                        <string>org.gello.client.actions.contextMenu.CheckoutFile</string>
+                        <string>org.gello.client.actions.contextMenu.CheckinFile</string>
+                        <string>org.gello.client.actions.contextMenu.VersionInfo</string>
+                      </menuActions>
+                      <editorActions>
+                        <string>org.gello.client.actions.fileEditor.CheckoutFile</string>
+                        <string>org.gello.client.actions.fileEditor.CheckinFile</string>
+                        <string>org.gello.client.actions.fileEditor.SaveFile</string>
+                        <string>org.gello.client.actions.fileEditor.VersionInfo</string>
+                      </editorActions>
+                      <fileData></fileData>
+                    </org.gello.server.model.GelloNode>
+                    <org.gello.server.model.GelloNode>
+                      <isFile>true</isFile>
+                      <isCompilable>false</isCompilable>
+                      <isTestable>false</isTestable>
+                      <isDeletable>false</isDeletable>
+                      <name>Expression Description</name>
+                      <path>/*Project 1/SPL Sections/Indications/*Indication 1/*Detail 1/Expression Description</path>
+                      <children/>
+                      <menuActions>
+                        <string>org.gello.client.actions.contextMenu.OpenFile</string>
+                        <string>org.gello.client.actions.contextMenu.CheckoutFile</string>
+                        <string>org.gello.client.actions.contextMenu.CheckinFile</string>
+                        <string>org.gello.client.actions.contextMenu.VersionInfo</string>
+                      </menuActions>
+                      <editorActions>
+                        <string>org.gello.client.actions.fileEditor.CheckoutFile</string>
+                        <string>org.gello.client.actions.fileEditor.CheckinFile</string>
+                        <string>org.gello.client.actions.fileEditor.SaveFile</string>
+                        <string>org.gello.client.actions.fileEditor.VersionInfo</string>
+                      </editorActions>
+                      <fileData></fileData>
+                    </org.gello.server.model.GelloNode>
+                    <org.gello.server.model.GelloNode>
+                      <isFile>true</isFile>
+                      <isCompilable>true</isCompilable>
+                      <isTestable>false</isTestable>
+                      <isDeletable>false</isDeletable>
+                      <name>Gello Expression</name>
+                      <path>/*Project 1/SPL Sections/Indications/*Indication 1/*Detail 1/Gello Expression</path>
+                      <children/>
+                      <menuActions>
+                        <string>org.gello.client.actions.contextMenu.OpenFile</string>
+                        <string>org.gello.client.actions.contextMenu.CheckoutFile</string>
+                        <string>org.gello.client.actions.contextMenu.CheckinFile</string>
+                        <string>org.gello.client.actions.contextMenu.CompileFile</string>
+                        <string>org.gello.client.actions.contextMenu.VersionInfo</string>
+                      </menuActions>
+                      <editorActions>
+                        <string>org.gello.client.actions.fileEditor.CheckoutFile</string>
+                        <string>org.gello.client.actions.fileEditor.CheckinFile</string>
+                        <string>org.gello.client.actions.fileEditor.SaveFile</string>
+                        <string>org.gello.client.actions.fileEditor.CompileFile</string>
+                        <string>org.gello.client.actions.fileEditor.VersionInfo</string>
+                      </editorActions>
+                      <fileData></fileData>
+                    </org.gello.server.model.GelloNode>
+                    <org.gello.server.model.GelloNode>
+                      <isFile>true</isFile>
+                      <isCompilable>false</isCompilable>
+                      <isTestable>false</isTestable>
+                      <isDeletable>false</isDeletable>
+                      <name>Author Comment</name>
+                      <path>/*Project 1/SPL Sections/Indications/*Indication 1/*Detail 1/Author Comment</path>
+                      <children/>
+                      <menuActions>
+                        <string>org.gello.client.actions.contextMenu.OpenFile</string>
+                        <string>org.gello.client.actions.contextMenu.CheckoutFile</string>
+                        <string>org.gello.client.actions.contextMenu.CheckinFile</string>
+                        <string>org.gello.client.actions.contextMenu.VersionInfo</string>
+                      </menuActions>
+                      <editorActions>
+                        <string>org.gello.client.actions.fileEditor.CheckoutFile</string>
+                        <string>org.gello.client.actions.fileEditor.CheckinFile</string>
+                        <string>org.gello.client.actions.fileEditor.SaveFile</string>
+                        <string>org.gello.client.actions.fileEditor.VersionInfo</string>
+                      </editorActions>
+                      <fileData></fileData>
+                    </org.gello.server.model.GelloNode>
+                    <org.gello.server.model.GelloNode>
+                      <isFile>true</isFile>
+                      <isCompilable>false</isCompilable>
+                      <isTestable>false</isTestable>
+                      <isDeletable>false</isDeletable>
+                      <name>Properties</name>
+                      <path>/*Project 1/SPL Sections/Indications/*Indication 1/*Detail 1/Properties</path>
+                      <children/>
+                      <menuActions>
+                        <string>org.gello.client.actions.contextMenu.OpenFile</string>
+                      </menuActions>
+                      <editorActions/>
+                      <fileData></fileData>
+                    </org.gello.server.model.GelloNode>
+                    <org.gello.server.model.GelloNode>
+                      <isFile>false</isFile>
+                      <isCompilable>false</isCompilable>
+                      <isTestable>false</isTestable>
+                      <isDeletable>false</isDeletable>
+                      <name>Test Cases</name>
+                      <path>/*Project 1/SPL Sections/Indications/*Indication 1/*Detail 1/Test Cases</path>
+                      <children>
+                        <org.gello.server.model.GelloNode>
+                          <isFile>false</isFile>
+                          <isCompilable>false</isCompilable>
+                          <isTestable>false</isTestable>
+                          <isDeletable>false</isDeletable>
+                          <name>*Test 1</name>
+                          <path>/*Project 1/SPL Sections/Indications/*Indication 1/*Detail 1/Test Cases/*Test 1</path>
+                          <children>
+                            <org.gello.server.model.GelloNode>
+                              <isFile>true</isFile>
+                              <isCompilable>false</isCompilable>
+                              <isTestable>true</isTestable>
+                              <isDeletable>false</isDeletable>
+                              <name>Test Case</name>
+                              <path>/*Project 1/SPL Sections/Indications/*Indication 1/*Detail 1/Test Cases/*Test 1/Test Case</path>
+                              <children/>
+                              <menuActions>
+                                <string>org.gello.client.actions.contextMenu.OpenFile</string>
+                                <string>org.gello.client.actions.contextMenu.CheckoutFile</string>
+                                <string>org.gello.client.actions.contextMenu.CheckinFile</string>
+                                <string>org.gello.client.actions.contextMenu.VersionInfo</string>
+                                <string>org.gello.client.actions.contextMenu.TestFile</string>
+                              </menuActions>
+                              <editorActions>
+                                <string>org.gello.client.actions.fileEditor.CheckoutFile</string>
+                                <string>org.gello.client.actions.fileEditor.CheckinFile</string>
+                                <string>org.gello.client.actions.fileEditor.SaveFile</string>
+                                <string>org.gello.client.actions.fileEditor.TestFile</string>
+                                <string>org.gello.client.actions.fileEditor.GenerateExpectedResults</string>
+                                <string>org.gello.client.actions.fileEditor.VersionInfo</string>
+                              </editorActions>
+                              <fileData></fileData>
+                            </org.gello.server.model.GelloNode>
+                            <org.gello.server.model.GelloNode>
+                              <isFile>true</isFile>
+                              <isCompilable>false</isCompilable>
+                              <isTestable>false</isTestable>
+                              <isDeletable>false</isDeletable>
+                              <name>Author Comment</name>
+                              <path>/*Project 1/SPL Sections/Indications/*Indication 1/*Detail 1/Test Cases/*Test 1/Author Comment</path>
+                              <children/>
+                              <menuActions>
+                                <string>org.gello.client.actions.contextMenu.OpenFile</string>
+                                <string>org.gello.client.actions.contextMenu.CheckoutFile</string>
+                                <string>org.gello.client.actions.contextMenu.CheckinFile</string>
+                                <string>org.gello.client.actions.contextMenu.VersionInfo</string>
+                              </menuActions>
+                              <editorActions>
+                                <string>org.gello.client.actions.fileEditor.CheckoutFile</string>
+                                <string>org.gello.client.actions.fileEditor.CheckinFile</string>
+                                <string>org.gello.client.actions.fileEditor.SaveFile</string>
+                                <string>org.gello.client.actions.fileEditor.VersionInfo</string>
+                              </editorActions>
+                              <fileData></fileData>
+                            </org.gello.server.model.GelloNode>
+                          </children>
+                          <menuActions>
+                            <string>org.gello.client.actions.contextMenu.DeleteTest</string>
+                            <string>org.gello.client.actions.contextMenu.CleanTests</string>
+                            <string>org.gello.client.actions.contextMenu.TestFile</string>
+                          </menuActions>
+                          <editorActions/>
+                          <fileData></fileData>
+                        </org.gello.server.model.GelloNode>
+                      </children>
+                      <menuActions>
+                        <string>org.gello.client.actions.contextMenu.AddTest</string>
+                      </menuActions>
+                      <editorActions/>
+                      <fileData></fileData>
+                    </org.gello.server.model.GelloNode>
+                  </children>
+                  <menuActions>
+                    <string>org.gello.client.actions.contextMenu.DeleteDetail</string>
+                  </menuActions>
+                  <editorActions/>
+                  <fileData></fileData>
+                </org.gello.server.model.GelloNode>
+              </children>
+              <menuActions>
+                <string>org.gello.client.actions.contextMenu.AddDetail</string>
+                <string>org.gello.client.actions.contextMenu.DeleteIndication</string>
+              </menuActions>
+              <editorActions/>
+              <fileData></fileData>
+            </org.gello.server.model.GelloNode>
+          </children>
+          <menuActions>
+            <string>org.gello.client.actions.contextMenu.AddIndication</string>
+          </menuActions>
+          <editorActions/>
+          <fileData></fileData>
+        </org.gello.server.model.GelloNode>
+        <org.gello.server.model.GelloNode>
+          <isFile>false</isFile>
+          <isCompilable>false</isCompilable>
+          <isTestable>false</isTestable>
+          <isDeletable>false</isDeletable>
+          <name>Contraindications</name>
+          <path>/*Project 1/SPL Sections/Contraindications</path>
+          <children/>
+          <menuActions>
+            <string>org.gello.client.actions.contextMenu.AddIndication</string>
+          </menuActions>
+          <editorActions/>
+          <fileData></fileData>
+        </org.gello.server.model.GelloNode>
+        <org.gello.server.model.GelloNode>
+          <isFile>false</isFile>
+          <isCompilable>false</isCompilable>
+          <isTestable>false</isTestable>
+          <isDeletable>false</isDeletable>
+          <name>Precautions</name>
+          <path>/*Project 1/SPL Sections/Precautions</path>
+          <children/>
+          <menuActions>
+            <string>org.gello.client.actions.contextMenu.AddIndication</string>
+          </menuActions>
+          <editorActions/>
+          <fileData></fileData>
+        </org.gello.server.model.GelloNode>
+        <org.gello.server.model.GelloNode>
+          <isFile>false</isFile>
+          <isCompilable>false</isCompilable>
+          <isTestable>false</isTestable>
+          <isDeletable>false</isDeletable>
+          <name>Special Risk</name>
+          <path>/*Project 1/SPL Sections/Special Risk</path>
+          <children/>
+          <menuActions>
+            <string>org.gello.client.actions.contextMenu.AddIndication</string>
+          </menuActions>
+          <editorActions/>
+          <fileData></fileData>
+        </org.gello.server.model.GelloNode>
+        <org.gello.server.model.GelloNode>
+          <isFile>false</isFile>
+          <isCompilable>false</isCompilable>
+          <isTestable>false</isTestable>
+          <isDeletable>false</isDeletable>
+          <name>Patient Population</name>
+          <path>/*Project 1/SPL Sections/Patient Population</path>
+          <children/>
+          <menuActions>
+            <string>org.gello.client.actions.contextMenu.AddIndication</string>
+          </menuActions>
+          <editorActions/>
+          <fileData></fileData>
+        </org.gello.server.model.GelloNode>
+        <org.gello.server.model.GelloNode>
+          <isFile>false</isFile>
+          <isCompilable>false</isCompilable>
+          <isTestable>false</isTestable>
+          <isDeletable>false</isDeletable>
+          <name>Drug Interactions</name>
+          <path>/*Project 1/SPL Sections/Drug Interactions</path>
+          <children/>
+          <menuActions>
+            <string>org.gello.client.actions.contextMenu.AddIndication</string>
+          </menuActions>
+          <editorActions/>
+          <fileData></fileData>
+        </org.gello.server.model.GelloNode>
+        <org.gello.server.model.GelloNode>
+          <isFile>false</isFile>
+          <isCompilable>false</isCompilable>
+          <isTestable>false</isTestable>
+          <isDeletable>false</isDeletable>
+          <name>Usage in Pregnancy</name>
+          <path>/*Project 1/SPL Sections/Usage in Pregnancy</path>
+          <children/>
+          <menuActions>
+            <string>org.gello.client.actions.contextMenu.AddIndication</string>
+          </menuActions>
+          <editorActions/>
+          <fileData></fileData>
+        </org.gello.server.model.GelloNode>
+        <org.gello.server.model.GelloNode>
+          <isFile>false</isFile>
+          <isCompilable>false</isCompilable>
+          <isTestable>false</isTestable>
+          <isDeletable>false</isDeletable>
+          <name>Adverse Reactions</name>
+          <path>/*Project 1/SPL Sections/Adverse Reactions</path>
+          <children/>
+          <menuActions>
+            <string>org.gello.client.actions.contextMenu.AddIndication</string>
+          </menuActions>
+          <editorActions/>
+          <fileData></fileData>
+        </org.gello.server.model.GelloNode>
+        <org.gello.server.model.GelloNode>
+          <isFile>false</isFile>
+          <isCompilable>false</isCompilable>
+          <isTestable>false</isTestable>
+          <isDeletable>false</isDeletable>
+          <name>Drug Abuse and Dependence</name>
+          <path>/*Project 1/SPL Sections/Drug Abuse and Dependence</path>
+          <children/>
+          <menuActions>
+            <string>org.gello.client.actions.contextMenu.AddIndication</string>
+          </menuActions>
+          <editorActions/>
+          <fileData></fileData>
+        </org.gello.server.model.GelloNode>
+      </children>
+      <menuActions/>
+      <editorActions/>
+      <fileData></fileData>
+    </org.gello.server.model.GelloNode>
+    <org.gello.server.model.GelloNode>
+      <isFile>false</isFile>
+      <isCompilable>false</isCompilable>
+      <isTestable>false</isTestable>
+      <isDeletable>false</isDeletable>
+      <name>Test Cases</name>
+      <path>/*Project 1/Test Cases</path>
+      <children/>
+      <menuActions>
+        <string>org.gello.client.actions.contextMenu.AddTest</string>
+        <string>org.gello.client.actions.contextMenu.TestProject</string>
+        <string>org.gello.client.actions.contextMenu.CleanTests</string>
+      </menuActions>
+      <editorActions/>
+      <fileData></fileData>
+    </org.gello.server.model.GelloNode>
+  </children>
+  <menuActions/>
+  <editorActions/>
+  <fileData></fileData>
+</org.gello.server.model.GelloNode>

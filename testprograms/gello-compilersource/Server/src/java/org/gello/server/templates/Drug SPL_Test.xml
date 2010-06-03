@@ -1,0 +1,64 @@
+<org.gello.server.model.GelloNode>
+  <isFile>false</isFile>
+  <isCompilable>false</isCompilable>
+  <isTestable>false</isTestable>
+  <isDeletable>false</isDeletable>
+  <name>*Test 1</name>
+  <path>/*Test 1</path>
+  <children>
+    <org.gello.server.model.GelloNode>
+      <isFile>true</isFile>
+      <isCompilable>false</isCompilable>
+      <isTestable>true</isTestable>
+      <isDeletable>false</isDeletable>
+      <name>Test Case</name>
+      <path>/*Test 1/Test Case</path>
+      <children/>
+      <menuActions>
+        <string>org.gello.client.actions.contextMenu.OpenFile</string>
+        <string>org.gello.client.actions.contextMenu.CheckoutFile</string>
+        <string>org.gello.client.actions.contextMenu.CheckinFile</string>
+        <string>org.gello.client.actions.contextMenu.VersionInfo</string>
+        <string>org.gello.client.actions.contextMenu.TestFile</string>
+      </menuActions>
+      <editorActions>
+        <string>org.gello.client.actions.fileEditor.CheckoutFile</string>
+        <string>org.gello.client.actions.fileEditor.CheckinFile</string>
+        <string>org.gello.client.actions.fileEditor.SaveFile</string>
+        <string>org.gello.client.actions.fileEditor.TestFile</string>
+        <string>org.gello.client.actions.fileEditor.GenerateExpectedResults</string>
+        <string>org.gello.client.actions.fileEditor.VersionInfo</string>
+      </editorActions>
+      <fileData></fileData>
+    </org.gello.server.model.GelloNode>
+    <org.gello.server.model.GelloNode>
+      <isFile>true</isFile>
+      <isCompilable>false</isCompilable>
+      <isTestable>false</isTestable>
+      <isDeletable>false</isDeletable>
+      <name>Author Comment</name>
+      <path>/*Test 1/Author Comment</path>
+      <children/>
+      <menuActions>
+        <string>org.gello.client.actions.contextMenu.OpenFile</string>
+        <string>org.gello.client.actions.contextMenu.CheckoutFile</string>
+        <string>org.gello.client.actions.contextMenu.CheckinFile</string>
+        <string>org.gello.client.actions.contextMenu.VersionInfo</string>
+      </menuActions>
+      <editorActions>
+        <string>org.gello.client.actions.fileEditor.CheckoutFile</string>
+        <string>org.gello.client.actions.fileEditor.CheckinFile</string>
+        <string>org.gello.client.actions.fileEditor.SaveFile</string>
+        <string>org.gello.client.actions.fileEditor.VersionInfo</string>
+      </editorActions>
+      <fileData></fileData>
+    </org.gello.server.model.GelloNode>
+  </children>
+  <menuActions>
+    <string>org.gello.client.actions.contextMenu.DeleteTest</string>
+    <string>org.gello.client.actions.contextMenu.CleanTests</string>
+    <string>org.gello.client.actions.contextMenu.TestFile</string>
+  </menuActions>
+  <editorActions/>
+  <fileData></fileData>
+</org.gello.server.model.GelloNode>
