@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:annotation>
+		<xs:documentation>Synthesized by Zubin Tiku from the HL7 RIM specification @ http://www.hl7.org/v3ballot/html/domains/pc/hmrepc.htm</xs:documentation>
+	</xs:annotation>
+	<xs:include schemaLocation="voc.xsd"/>
+	<xs:include schemaLocation="Act.xsd"/>
+	<xs:complexType name="Observation">
+		<xs:annotation>
+			<xs:documentation>Hl7 Observation @ http://www.hl7.org/v3ballot/html/infrastructure/rim/rim.htm#Observation-cls</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="Act">
+				<xs:sequence>
+					<xs:element name="value" type="CD" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>
+								Information that is assigned or determined by the observation action.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="interpretationCode" type="CE" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>
+								One or more codes specifying a rough qualitative interpretation of the observation, such as "normal", "abnormal", "below normal", "change up", "resistant", "susceptible", etc.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="methodCode" type="CE" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>
+								A code that provides additional detail about the means or technique used to ascertain the observation.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="targetSiteCode" type="CD" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>
+								A code specifying detail about the anatomical site or system that is the focus of the observation if this information is not already implied by the observation definition or Act.code.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

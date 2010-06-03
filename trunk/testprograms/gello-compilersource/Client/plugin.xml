@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+
+   <extension
+         id="application"
+         point="org.eclipse.core.runtime.applications">
+      <application>
+         <run
+               class="org.gello.client.Application">
+         </run>
+      </application>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            name="Gello Perspective"
+            class="org.gello.client.Perspective"
+            id="org.gello.client.perspective">
+      </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.gello.client.editors.FileEditor"
+            default="false"
+            icon="icons/page_code.png"
+            id="org.gello.client.editors.FileEditor"
+            name="File Editor"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            class="org.gello.client.views.Browser"
+            icon="icons/browser.png"
+            id="org.gello.client.views.Browser"
+            name="Browser"/>
+      <view
+            class="org.gello.client.views.TestOutput"
+            icon="icons/test_output.png"
+            id="org.gello.client.views.TestOutput"
+            name="Test Output"/>
+      <view
+            class="org.gello.client.views.Status"
+            icon="icons/status.png"
+            id="org.gello.client.views.Status"
+            name="Status"/>
+      <view
+            class="org.gello.client.views.CompilerOutput"
+            icon="icons/compiler_output.png"
+            id="org.gello.client.views.CompilerOutput"
+            name="Compiler Output"/>
+      <view
+            class="org.gello.client.views.Projects"
+            icon="icons/projects.png"
+            id="org.gello.client.views.Projects"
+            name="Projects"/>
+      <view
+            class="org.gello.client.views.Expressions"
+            icon="icons/expressions.png"
+            id="org.gello.client.views.Expressions"
+            name="Expressions"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.gello.client.preferences.GeneralPreferencePage"
+            id="org.gello.client.preferences.GeneralPreferencePage"
+            name="General"/>
+   </extension>
+   <extension
+         id="product"
+         point="org.eclipse.core.runtime.products">
+      <product
+            application="org.gello.client.application"
+            name="GELLO Expression Authoring Tool">
+         <property
+               name="windowImages"
+               value="icons/gelloTitle.gif"/>
+         <property
+               name="aboutText"
+               value="GELLO Expression Authoring Tool&#x0A;Version: 1.0.0&#x0A;&#x0A;GELLO, also known as Guideline Expression Language, Object Oriented,&#x0A;is an ANSI-accredited HL7 standard for creating computable, unambiguous&#x0A;clinical queries. More details on the architecture and history of and the&#x0A;vision for GELLO is available at www.gello.org.&#x0A;&#x0A;For general information, commiter interest or questions please write to info@gello.org.&#x0A;&#x0A;For technical questions about the GELLO expression authoring tool jont@webreachinc.com."/>
+         <property
+               name="aboutImage"
+               value="icons/alt_about.gif"/>
+      </product>
+   </extension>
+
+</plugin>

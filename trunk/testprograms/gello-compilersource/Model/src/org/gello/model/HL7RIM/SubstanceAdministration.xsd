@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:annotation>
+		<xs:documentation>Synthesized by Zubin Tiku from the HL7 RIM specification @ http://www.hl7.org/v3ballot/html/domains/pc/hmrepc.htm</xs:documentation>
+	</xs:annotation>
+	<xs:include schemaLocation="voc.xsd"/>
+	<xs:include schemaLocation="Act.xsd"/>
+	<xs:complexType name="SubstanceAdministration">
+		<xs:annotation>
+			<xs:documentation>Hl7 Patient @ http://www.hl7.org/v3ballot/html/infrastructure/rim/rim.htm#SubstanceAdministration-cls</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="Act">
+				<xs:sequence>
+					<xs:element name="routeCode" type="CE" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								The the physiological path or route for introducing the therapeutic material into or onto the subject.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="approachSiteCode" type="CD" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>
+								The detailed anatomical site where the medication enters or is applied to the subject.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="doseQuantity" type="IVL_PQ" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								The amount of the therapeutic agent or other substance given at one administration event.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="rateQuantity" type="IVL_PQ" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>
+								Identifies the speed with which the substance is introduced into the subject. Expressed as a physical (extensive) quantity over elapsed time (e.g., examples are 100 mL/h, 1 g/d, 40 mmol/h, etc.)
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="doseCheckQuantity" type="RTO" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>
+								This attribute identifies the expected quantity to be consumed over a period of time. It is used as a verification check on the values specified for other values.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>	
+					<xs:element name="maxDoseQuantity" type="RTO" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>
+								Identifies the maximum total quantity of a therapeutic substance that may be administered to a subject over the period of time.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>						
+					<xs:element name="administrationUnitCode" type="CE" minOccurs="0" maxOccurs="1">
+						<xs:annotation>
+							<xs:documentation>
+								A code for the administered thing taken from a larger whole. Used if the consumable material is specified as a larger whole but the doseQuantity relates to a specific portion of it rather than the entire consumable material.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>	
+					<xs:element name="methodCode" type="CD" minOccurs="0" maxOccurs="unbounded">
+						<xs:annotation>
+							<xs:documentation>
+								Identifies the means or technique used to perform the particular substance administration.
+							</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+</xs:schema>

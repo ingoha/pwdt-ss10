@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Patient classCode="PAT"><patientLivingSubject determinerCode="INSTANCE" classCode="PSN"></patientLivingSubject><observation moodCode="EVN" classCode="OBS"><interpretationCode displayName="Severe pain" codeSystemName="SNOMED-CT" codeSystem="2.16.840.1.113883.6.96" code="76948002"></interpretationCode></observation></Patient>

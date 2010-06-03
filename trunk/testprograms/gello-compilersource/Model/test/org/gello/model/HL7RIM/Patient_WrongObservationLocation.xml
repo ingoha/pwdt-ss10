@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Patient classCode="PAT">
+    <patientLivingSubject determinerCode="INSTANCE" classCode="PSN">
+        <observation moodCode="EVN" classCode="OBS">
+            <interpretationCode displayName="Severe pain" codeSystemName="SNOMED-CT" codeSystem="2.16.840.1.113883.6.96" code="76948002"></interpretationCode>
+        </observation>
+        <administrativeGenderCode codeSystem="2.16.840.1.113883.5.1" code="M"></administrativeGenderCode>
+        <birthTime value="19660505"></birthTime>
+        <maritalStatusCode codeSystem="2.16.840.1.113883.5.2" code="S"></maritalStatusCode>
+    </patientLivingSubject>
+    <observation moodCode="EVN" classCode="OBS">
+        <interpretationCode displayName="Alcohol intoxication" codeSystemName="SNOMED-CT" codeSystem="2.16.840.1.113883.6.96" code="25702006"></interpretationCode>
+    </observation>
+    <substanceAdministration moodCode="EVN" classCode="ActClass">
+        <code displayName="Non-steroidal anti-inflammatory agent" codeSystemName="SNOMED-CT" codeSystem="2.16.840.1.113883.6.96" code="6403005"></code>
+        <effectiveTime>
+            <low value="20041103"></low>
+            <high value="20051103"></high>
+        </effectiveTime>
+    </substanceAdministration>
+</Patient>
