@@ -1,0 +1,3 @@
+http://healthinfo.med.dal.ca/HL7Intro/
+
+http://www.hl7.org/v3ballot2010MAY/html/help/v3guide/v3guide.htm#v3ginfomdl
